@@ -5,17 +5,18 @@ defmodule Cachets do
   # for more information on OTP Applications
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
-    true = (:__Cachets_cache__ == :ets.new(:__Cachets_cache__, [:public, :named_table, :ordered_set, {:write_concurrency, true}, {:read_concurrency, true}, :protected]))
+    :ets.new(Application.get_env(:cachets, :table_common), [:set, :public, :named_table])
+    :ets.new(Application.get_env(:cachets, :table_exact), [:set, :public, :named_table])
 
     children = [
       # Define workers and child supervisors to be supervised
       # worker(Cachets.Worker, [arg1, arg2, arg3]),
+      worker(Cachets.Common, [])
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
     # for other strategies and supported options
-    opts = [strategy: :simple_one_for_one, name: Cachets.Supervisor]
+    opts = [strategy: :one_for_one, name: Cachets.Supervisor]
     Supervisor.start_link(children, opts)
   end
-
 end
