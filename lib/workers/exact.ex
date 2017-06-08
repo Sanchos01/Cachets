@@ -27,6 +27,9 @@ defmodule Cachets.Exact do
   def delete(key, opts \\ [])
   def delete(key, _opts) do
     :ets.delete(@table, key)
+    Enum.map(:pg2.get_members(@pg2_group), fn(pid) ->
+      send pid, {key}
+    end)
   end
 
   @spec deleter(term, integer) :: true

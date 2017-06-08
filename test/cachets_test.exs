@@ -5,7 +5,7 @@ defmodule CachetsTest do
 
   test "add to exact" do
     Cachets.Exact.add(:key, 123)
-    assert [{:key, 123}] == Cachets.Exact.get(:key)
+    assert [key: 123] == Cachets.Exact.get(:key)
   end
 
   test "process-deleter is exist" do
