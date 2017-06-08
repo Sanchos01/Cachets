@@ -31,4 +31,5 @@ use Mix.Config
 
 config :cachets,
   table_common: :__Cachets__common__,
-  table_exact: :__Cachets__exact__
+  table_exact: :__Cachets__exact__,
+  pg2group_exact: :__pg2__exact__

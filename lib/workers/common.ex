@@ -8,6 +8,7 @@ defmodule Cachets.Common do
   def add(key, value, opts \\ [])
   def add(key, value, _opts) do
     :ets.insert(@table, {key, value})
+    :ok
   end
 
   def get(key, opts \\ [])
