@@ -11,7 +11,8 @@ defmodule Cachets.Exact do
     :ets.insert(@table, {key, value})
     if (ttl = opts[:ttl]) |> is_integer() do
       Enum.map(:pg2.get_local_members(@pg2_group), fn(pid) ->
-        send pid, {key} end)
+        send pid, {key}
+      end)
       pid = spawn(__MODULE__, :deleter, [key, ttl])
       :pg2.join(@pg2_group, pid)
     end
