@@ -6,14 +6,11 @@ defmodule Cachets do
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
     :ets.new(Application.get_env(:cachets, :table_common), [:set, :public, :named_table])
-    :ets.new(Application.get_env(:cachets, :table_exact), [:set, :public, :named_table])
-    :pg2.create(Application.get_env(:cachets, :pg2group_exact))
 
     children = [
       # Define workers and child supervisors to be supervised
       # worker(Cachets.Worker, [arg1, arg2, arg3]),
-      worker(Cachets.Common, []),
-      worker(Cachets.Exact, [])
+      worker(Cachets.Common, [])
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html

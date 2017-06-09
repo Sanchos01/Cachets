@@ -29,6 +29,7 @@ defmodule Cachets.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    [{:exactor, "~> 2.2.3", warn_missing: false}]
+    [{:exactor, "~> 2.2.3", warn_missing: false},
+     {:flow, "~> 0.12"}]
   end
 end

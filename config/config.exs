@@ -21,6 +21,10 @@ use Mix.Config
 #     config :logger, level: :info
 #
 
+config :cachets,
+  table_common: :__Cachets__common__,
+  common_timeout: 100
+
 # It is also possible to import configuration files, relative to this
 # directory. For example, you can emulate configuration per environment
 # by uncommenting the line below and defining dev.exs, test.exs and such.
@@ -29,7 +33,4 @@ use Mix.Config
 #
 #     import_config "#{Mix.env}.exs"
 
-config :cachets,
-  table_common: :__Cachets__common__,
-  table_exact: :__Cachets__exact__,
-  pg2group_exact: :__pg2__exact__
+import_config "#{Mix.env}.exs"
