@@ -22,8 +22,9 @@ use Mix.Config
 #
 
 config :cachets,
-  table_common: :__Cachets__common__,
-  common_timeout: 100
+  common_genserver: Cachets.Common,
+  common_table: :__Cachets__common__,
+  timeout: 100
 
 # It is also possible to import configuration files, relative to this
 # directory. For example, you can emulate configuration per environment

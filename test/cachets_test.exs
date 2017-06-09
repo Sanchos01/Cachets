@@ -12,4 +12,10 @@ defmodule CachetsTest do
     Cachets.Common.delete(:key)
     assert Cachets.Common.get(:key) == []
   end
+
+  test "record self-delete" do
+    Cachets.Common.add(:key, 123, ttl: 10)
+    :timer.sleep(200)
+    assert Cachets.Common.get(:key) == []
+  end
 end
