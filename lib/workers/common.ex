@@ -1,11 +1,10 @@
 defmodule Cachets.Common do
   use ExActor.GenServer
-  @behaviour Cachets.Worker
   @table Application.get_env(:cachets, :common_table)
-  import Cachets.Utils
+  import Cachets.Utils, only: [nowstamp: 0]
 
   def start_link(name, opts \\ [])
-  defstart start_link(name, _opts), links: true, gen_server_opts: [name: name] do
+  defstart start_link(name, opts), links: true, gen_server_opts: [name: name] do
     timeout_after(Application.get_env(:cachets, :timeout))
     initial_state([])
   end

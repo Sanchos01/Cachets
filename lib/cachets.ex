@@ -16,8 +16,7 @@ defmodule Cachets do
     Supervisor.start_link(children, opts)
   end
 
-  # def new_cache(name) do
-  #   with :ok <- Cachets.Worker.Supervisor.new_cache(name),
-  #        do: 
-  # end
+  def add(worker, key, value, opts \\ [])
+  def add(worker, key, value, []), do: GenServer.cast(worker, {:add, key, value})
+  def add(worker, key, value, opts), do: GenServer.cast(worker, {:add, key, value, opts})
 end

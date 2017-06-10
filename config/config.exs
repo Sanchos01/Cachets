@@ -20,6 +20,8 @@ use Mix.Config
 #
 #     config :logger, level: :info
 #
+config :logger,
+  level: :debug
 
 config :cachets,
   common_genserver: Cachets.Common,
