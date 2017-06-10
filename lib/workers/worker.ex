@@ -3,6 +3,7 @@ defmodule Cachets.Worker do
   @callback add(term, term, opts :: [key: integer | atom] | none) :: :ok | {:error, term}
   @callback get(term, opts :: [key: integer | atom] | none) :: [key: term] | []
   @callback delete(term, opts :: [key: integer | atom] | none) :: true
+  import Cachets.Utils
 
   def start_link(name, opts \\ [])
   defstart start_link(name, opts), links: true, gen_server_opts: [name: name] do
@@ -17,7 +18,7 @@ defmodule Cachets.Worker do
   
   defhandleinfo :timeout, state: [], do: noreply()
   # defhandleinfo :timeout, state: state do
-  #   with olds <- Enum.filter(state, fn {_key, ttl} -> ttl < Cachets.nowstamp() end) |> Keyword.keys() do
+  #   with olds <- Enum.filter(state, fn {_key, ttl} -> ttl < nowstamp() end) |> Keyword.keys() do
   #     Enum.each(olds, &delete/1)
   #     noreply()
   #   end

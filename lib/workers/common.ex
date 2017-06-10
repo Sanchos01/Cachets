@@ -2,6 +2,7 @@ defmodule Cachets.Common do
   use ExActor.GenServer
   @behaviour Cachets.Worker
   @table Application.get_env(:cachets, :common_table)
+  import Cachets.Utils
 
   def start_link(name, opts \\ [])
   defstart start_link(name, _opts), links: true, gen_server_opts: [name: name] do
@@ -16,7 +17,7 @@ defmodule Cachets.Common do
 
   defhandleinfo :timeout, state: [], do: noreply()
   defhandleinfo :timeout, state: state do
-    with olds <- Enum.filter(state, fn {_key, ttl} -> ttl < Cachets.nowstamp() end) |> Keyword.keys() do
+    with olds <- Enum.filter(state, fn {_key, ttl} -> ttl < nowstamp() end) |> Keyword.keys() do
       Enum.each(olds, &delete/1)
       noreply()
     end
@@ -26,7 +27,7 @@ defmodule Cachets.Common do
   def add(key, value, opts) do
     delete_from_state(Cachets.Common, key)
     cond do
-      (ttl = opts[:ttl]) |> is_integer -> add_to_state(Cachets.Common, key, Cachets.nowstamp() + ttl)
+      (ttl = opts[:ttl]) |> is_integer -> add_to_state(Cachets.Common, key, nowstamp() + ttl)
       true -> add_to_state(Cachets.Common, key, :inf)
     end
     :ets.insert(@table, {key, value})
