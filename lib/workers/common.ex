@@ -1,4 +1,5 @@
 defmodule Cachets.Common do
+  require Logger
   use ExActor.GenServer
   @table Application.get_env(:cachets, :common_table)
   import Cachets.Utils, only: [nowstamp: 0]
@@ -9,38 +10,36 @@ defmodule Cachets.Common do
     initial_state([])
   end
 
-  defcast add_to_state(key, ttl), state: state, do: new_state([{key, ttl}|state])
-  defcast delete_from_state(key), state: state do
-    new_state(Enum.reject(state, fn {el, _ttl} -> el == key end))
-  end
-
   defhandleinfo :timeout, state: [], do: noreply()
   defhandleinfo :timeout, state: state do
-    with olds <- Enum.filter(state, fn {_key, ttl} -> ttl < nowstamp() end) |> Keyword.keys() do
-      Enum.each(olds, &delete/1)
+    {olds, newstate} = Enum.split_with(state, fn
+      {_key, ttl} when is_integer(ttl) -> ttl < nowstamp()
+      _ -> false end)
+    if length(olds) > 0 do
+      Logger.debug("to_delete: #{inspect olds} from #{inspect @table}, newstate: #{inspect newstate}")
+      Enum.each(olds |> Keyword.keys(), &(:ets.delete(@table, &1)))
+      new_state(newstate)
+    else
       noreply()
     end
   end
 
-  def add(key, value, opts \\ [])
-  def add(key, value, opts) do
-    delete_from_state(Cachets.Common, key)
-    cond do
-      (ttl = opts[:ttl]) |> is_integer -> add_to_state(Cachets.Common, key, nowstamp() + ttl)
-      true -> add_to_state(Cachets.Common, key, :inf)
-    end
+  defcast add(key, value, opts), state: state do
+    Logger.debug("adding values")
     :ets.insert(@table, {key, value})
-    :ok
+    if (ttl = opts[:ttl]) |> is_integer do
+      new_state([{key, nowstamp() + ttl}|Enum.reject(state, fn {el, _ttl} -> el == key end)])
+    else
+      new_state([{key, :inf}|Enum.reject(state, fn {el, _ttl} -> el == key end)])
+    end
   end
 
-  def get(key, opts \\ [])
-  def get(key, _opts) do
-    :ets.lookup(@table, key)
+  defcall get(key, _opts) do
+    reply(:ets.lookup(@table, key))
   end
 
-  def delete(key, opts \\ [])
-  def delete(key, _opts) do
+  defcast delete(key, _opts), state: state do
     :ets.delete(@table, key)
-    delete_from_state(Cachets.Common, key)
+    new_state(Enum.reject(state, fn {el, _ttl} -> el == key end))
   end
 end
