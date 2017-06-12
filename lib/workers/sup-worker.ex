@@ -13,9 +13,12 @@ defmodule Cachets.Worker.Supervisor do
     supervise(children, strategy: :simple_one_for_one)
   end
   
-  def new_cache(name) do
-    with nil <- GenServer.whereis(name),
-         _ets <- :ets.new(name, @ets_preset),
-         do: {:ok, _pid} = Supervisor.start_child(__MODULE__, [name])
+  def new_cache(name) when is_bitstring(name) do
+    a_name = name |> String.to_atom()
+    with nil <- GenServer.whereis(a_name),
+         _ets <- :ets.new(a_name, @ets_preset),
+         via_name = {:via, Registry, {Cachets.Worker.Registry, name}},
+         do: {:ok, _pid} = Supervisor.start_child(__MODULE__, [via_name])
   end
+  def new_cache(_), do: {:error, "name must be string"}
 end

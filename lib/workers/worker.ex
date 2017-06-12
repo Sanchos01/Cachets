@@ -6,7 +6,9 @@ defmodule Cachets.Worker do
   def start_link(name, opts \\ [])
   defstart start_link(name, opts), links: true, gen_server_opts: [name: name] do
     timeout_after(opts[:timeout] || Application.get_env(:cachets, :timeout))
-    initial_state([name_of_attached_table: name])
+    {:via, Registry, {Cachets.Worker.Registry, string_name}} = name
+    Logger.debug("start #{inspect string_name}")
+    initial_state([name_of_attached_table: String.to_atom(string_name)])
   end
   
   defhandleinfo :timeout, state: [name_of_attached_table: _], do: noreply()

@@ -10,19 +10,24 @@ defmodule Cachets do
 
     children = [
       worker(Cachets.Common, [Application.get_env(:cachets, :common_genserver)]),
-      supervisor(Cachets.Worker.Supervisor, [])
+      supervisor(Cachets.Worker.Supervisor, []),
+      supervisor(Registry, [:unique, Cachets.Worker.Registry])
     ]
 
     opts = [strategy: :one_for_one, name: Cachets.Supervisor]
     Supervisor.start_link(children, opts)
   end
 
-  def add(worker, key, value, opts \\ []), do: GenServer.cast(worker, {:add, key, value, opts})
+  def via_tuple(name) do
+    {:via, Registry, {Cachets.Worker.Registry, name}}
+  end
+
+  def add(worker, key, value, opts \\ []), do: GenServer.cast(via_tuple(worker), {:add, key, value, opts})
   def adds(key, value, opts \\ []), do: GenServer.cast(@common_genserver, {:add, key, value, opts})
 
-  def get(worker, key, opts \\ []), do: GenServer.call(worker, {:get, key, opts})
+  def get(worker, key, opts \\ []), do: GenServer.call(via_tuple(worker), {:get, key, opts})
   def gets(key, opts \\ []), do: GenServer.call(@common_genserver, {:get, key, opts})
 
-  def delete(worker, key, opts \\ []), do: GenServer.cast(worker, {:delete, key, opts})
+  def delete(worker, key, opts \\ []), do: GenServer.cast(via_tuple(worker), {:delete, key, opts})
   def deletes(key, opts \\ []), do: GenServer.cast(@common_genserver, {:delete, key, opts})
 end
