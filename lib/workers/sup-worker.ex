@@ -12,11 +12,15 @@ defmodule Cachets.Worker.Supervisor do
     ]
     supervise(children, strategy: :simple_one_for_one)
   end
+
+  def name_for_table(name) do
+    String.to_atom("__Common__" <> name <> "__")
+  end
   
   def new_cache(name) when is_bitstring(name) do
-    a_name = name |> String.to_atom()
-    with nil <- GenServer.whereis(a_name),
-         _ets <- :ets.new(a_name, @ets_preset),
+    table_name = name_for_table(name)
+    with nil <- GenServer.whereis(table_name),
+         _ets <- :ets.new(table_name, @ets_preset),
          via_name = {:via, Registry, {Cachets.Worker.Registry, name}},
          do: {:ok, _pid} = Supervisor.start_child(__MODULE__, [via_name])
   end
