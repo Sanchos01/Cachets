@@ -2,6 +2,9 @@ defmodule CachetsTest do
   use ExUnit.Case
   doctest Cachets
 
+  setup_all do
+    Cachets.new_cache("foo")
+  end
   test "add to common" do
     Cachets.adds(:key, 123)
     assert [{:key, 123}] == Cachets.gets(:key)

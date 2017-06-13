@@ -24,11 +24,24 @@ defmodule Cachets.Worker do
   end
 
   defcast add(key, value, opts), state: state do
+    Logger.debug("adding values to #{inspect state[:name_of_attached_table]}")
     :ets.insert(state[:name_of_attached_table], {key, value})
     if (ttl = opts[:ttl]) |> is_integer do
       new_state([{key, nowstamp() + ttl}|Enum.reject(state, fn {el, _ttl} -> el == key end)])
     else
       new_state([{key, :inf}|Enum.reject(state, fn {el, _ttl} -> el == key end)])
+    end
+  end
+
+  defcall add_new(key, value, opts), state: state do
+    Logger.debug("adding values to #{inspect state[:name_of_attached_table]}")
+    case :ets.insert_new(state[:name_of_attached_table], {key, value}) do
+      true -> if (ttl = opts[:ttl]) |> is_integer do
+                set_and_reply([{key, nowstamp() + ttl}|Enum.reject(state, fn {el, _ttl} -> el == key end)], :ok)
+              else
+                set_and_reply([{key, :inf}|Enum.reject(state, fn {el, _ttl} -> el == key end)], :ok)
+              end
+      _ -> reply({:error, "this key already exist"})
     end
   end
 

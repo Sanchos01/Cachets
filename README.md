@@ -9,7 +9,7 @@ by adding `cachets` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
-  [{:cachets, "~> 0.1.0"}]
+  [{:cachets, "~> 0.2"}]
 end
 ```
 

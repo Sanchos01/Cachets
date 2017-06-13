@@ -3,11 +3,17 @@ defmodule Cachets.Mixfile do
 
   def project do
     [app: :cachets,
-     version: "0.1.1",
+     version: "0.2.0",
      elixir: "~> 1.4",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     deps: deps()]
+     deps: deps(),
+
+     # Docs
+     name: "Cachets",
+     source_url: "https://github.com/Sanchos01/Cachets",
+     docs: [main: "Cachets", # The main page in the docs
+          extras: ["README.md"]]]
   end
 
   # Configuration for the OTP application
@@ -29,6 +35,7 @@ defmodule Cachets.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    [{:exactor, "~> 2.2.3", warn_missing: false}]
+    [{:exactor, "~> 2.2.3", warn_missing: false},
+     {:ex_doc, "~> 0.14", only: :dev, runtime: false}]
   end
 end
