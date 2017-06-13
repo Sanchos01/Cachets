@@ -5,9 +5,8 @@ defmodule Cachets.Worker do
 
   def start_link(name, opts \\ [])
   defstart start_link(name, opts), links: true, gen_server_opts: [name: name] do
-    timeout_after(opts[:timeout] || Application.get_env(:cachets, :timeout))
-    table_name = opts[:t_name]
-    initial_state([name_of_attached_table: table_name])
+    timeout_after(opts[:timeout])
+    initial_state([name_of_attached_table: opts[:t_name]])
   end
   
   defhandleinfo :timeout, state: [name_of_attached_table: _], do: noreply()
