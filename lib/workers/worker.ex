@@ -2,14 +2,12 @@ defmodule Cachets.Worker do
   require Logger
   use ExActor.GenServer
   import Cachets.Utils, only: [nowstamp: 0]
-  defdelegate name_for_table(string), to: Cachets.Worker.Supervisor
 
   def start_link(name, opts \\ [])
   defstart start_link(name, opts), links: true, gen_server_opts: [name: name] do
     timeout_after(opts[:timeout] || Application.get_env(:cachets, :timeout))
-    {:via, Registry, {Cachets.Worker.Registry, string_name}} = name
-    Logger.debug("start #{inspect string_name}")
-    initial_state([name_of_attached_table: name_for_table(string_name)])
+    table_name = opts[:t_name]
+    initial_state([name_of_attached_table: table_name])
   end
   
   defhandleinfo :timeout, state: [name_of_attached_table: _], do: noreply()
