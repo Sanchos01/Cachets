@@ -1,4 +1,5 @@
 # Cachets
+[![Build Status](https://secure.travis-ci.org/Sanchos01/cachets.svg "Build Status")](http://travis-ci.org/Sanchos01/cachets)
 
 **TODO: Add description**
 
