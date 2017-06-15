@@ -1,5 +1,5 @@
 # Cachets
-[![Build Status](https://secure.travis-ci.org/Sanchos01/cachets.svg "Build Status")](http://travis-ci.org/Sanchos01/cachets)
+[![Build Status](https://secure.travis-ci.org/Sanchos01/cachets.svg "Build Status")](http://travis-ci.org/Sanchos01/cachets) [![Deps Status](https://beta.hexfaktor.org/badge/all/github/Sanchos01/Cachets.svg)](https://beta.hexfaktor.org/github/Sanchos01/Cachets)
 
 **TODO: Add description**
 
