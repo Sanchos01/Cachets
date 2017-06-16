@@ -14,7 +14,7 @@ defmodule Cachets do
   defdelegate new_cache(name, opts \\ []), to: Cachets.Worker.Supervisor
   import Cachets.Utils, only: [name_for_table: 1]
 
-  def start(_type, _args) do
+  def start(_type, args) do
     import Supervisor.Spec, warn: false
     :ets.new(Application.get_env(:cachets, :common_table), @ets_preset)
 
@@ -25,7 +25,12 @@ defmodule Cachets do
     ]
 
     opts = [strategy: :one_for_one, name: Cachets.Supervisor]
-    Supervisor.start_link(children, opts)
+    {:ok, pid} = Supervisor.start_link(children, opts)
+    case args[:add_caches] do
+        lst = [_|_] -> Enum.map(lst, &(new_cache(&1)))
+        _ -> :ok
+    end
+    {:ok, pid}
   end
   @doc """
   Add the key and value to default storage
@@ -119,7 +124,7 @@ defmodule Cachets do
   """
   def delete(name, key, opts \\ []), do: GenServer.cast(via_tuple(name), {:delete, key, opts})
 
-  defp via_tuple(name) do
+  def via_tuple(name) do
     {:via, Registry, {Cachets.Worker.Registry, name}}
   end
 end

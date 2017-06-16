@@ -21,4 +21,11 @@ defmodule CachetsTest do
     :timer.sleep(200)
     assert Cachets.gets(:key) == []
   end
+
+  test "creating new ETS-cache" do
+    assert GenServer.whereis(Cachets.via_tuple("foo")) != nil # Customized table
+    assert GenServer.whereis(Cachets.via_tuple("bar")) == nil
+    Cachets.new_cache("bar")
+    assert GenServer.whereis(Cachets.via_tuple("bar")) != nil
+  end
 end
