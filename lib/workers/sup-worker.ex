@@ -34,13 +34,15 @@ defmodule Cachets.Worker.Supervisor do
   def destroy_cache(name, opts) when is_bitstring(name) do
     table_name = name_for_table(name)
     via_name = {:via, Registry, {Cachets.Worker.Registry, name}}
-    if GenServer.whereis(via_name) == nil
-    do
-      {:error, "This cache is not exists"}
-    else
-      Cachets.Worker.stop(via_name)
-      :ets.delete(table_name)
-      :ok
+    case GenServer.whereis(via_name) do
+      nil -> {:error, "This cache is not exists"}
+      pid -> ref = Process.monitor(pid)
+             Cachets.Worker.stop(via_name)
+             receive do
+               {:DOWN, ^ref, :process, ^pid, :normal} -> :ok
+             after
+               20_000 -> {:error, "Can't stop cache #{inspect via_name}"}
+             end
     end
   end
   def destroy_cache(_, _), do: {:error, "name must be string"}

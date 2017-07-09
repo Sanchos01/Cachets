@@ -20,7 +20,7 @@ defmodule Cachets do
     :ets.new(Application.get_env(:cachets, :common_table), @ets_preset)
 
     children = [
-      worker(Cachets.Common, [Application.get_env(:cachets, :common_genserver)]),
+      worker(Cachets.Common, [@common_genserver]),
       supervisor(Cachets.Worker.Supervisor, []),
       supervisor(Registry, [:unique, Cachets.Worker.Registry])
     ]
