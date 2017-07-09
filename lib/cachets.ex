@@ -12,6 +12,7 @@ defmodule Cachets do
   @common_genserver Application.get_env(:cachets, :common_genserver)
   @ets_preset [:set, :public, :named_table]
   defdelegate new_cache(name, opts \\ []), to: Cachets.Worker.Supervisor
+  defdelegate destroy_cache(name, opts \\ []), to: Cachets.Worker.Supervisor
   import Cachets.Utils, only: [name_for_table: 1]
 
   def start(_type, args) do
@@ -40,7 +41,7 @@ defmodule Cachets do
       iex> Cachets.adds(:foo, "bar")
       :ok
   """
-  def adds(key, value, opts \\ []), do: GenServer.cast(@common_genserver, {:add, key, value, opts})
+  def adds(key, value, opts \\ []), do: Cachets.Common.add(@common_genserver, key, value, opts)
   @doc """
   Add the key and value to created before storage (in test pre-created "foo")
 
@@ -51,7 +52,7 @@ defmodule Cachets do
   """
   def add(name, key, value, opts \\ []) do
     with [_|_] <- :ets.info(name_for_table(name)),
-    do: GenServer.cast(via_tuple(name), {:add, key, value, opts})
+    do: Cachets.Worker.add(via_tuple(name), key, value, opts)
   end
   @doc """
   Add the key and value to default storage (but don't rewrite)
@@ -63,7 +64,7 @@ defmodule Cachets do
       iex> Cachets.adds_new(:foo, "bar")
       {:error, "this key already exist"}
   """
-  def adds_new(key, value, opts \\ []), do: GenServer.call(@common_genserver, {:add_new, key, value, opts})
+  def adds_new(key, value, opts \\ []), do: Cachets.Common.add_new(@common_genserver, key, value, opts)
   @doc """
   Add the key and value to created before storage (in test pre-created "foo") (but don't rewrite)
 
@@ -74,7 +75,7 @@ defmodule Cachets do
       iex> Cachets.add_new("foo", :bar, "baz")
       {:error, "this key already exist"}
   """
-  def add_new(name, key, value, opts \\ []), do: GenServer.call(via_tuple(name), {:add_new, key, value, opts})
+  def add_new(name, key, value, opts \\ []), do: Cachets.Worker.add_new(via_tuple(name), key, value, opts)
   @doc """
   Get the key and value from default storage
 
@@ -85,7 +86,7 @@ defmodule Cachets do
       iex> Cachets.gets(:foo)
       [foo: "bar"]
   """
-  def gets(key, opts \\ []), do: GenServer.call(@common_genserver, {:get, key, opts})
+  def gets(key, opts \\ []), do: Cachets.Common.get(@common_genserver, key, opts)
   @doc """
   Get the key and value from created before storage (in test pre-created "foo")
 
@@ -96,7 +97,7 @@ defmodule Cachets do
       iex> Cachets.get("foo", :bar)
       [bar: "baz"]
   """
-  def get(name, key, opts \\ []), do: GenServer.call(via_tuple(name), {:get, key, opts})
+  def get(name, key, opts \\ []), do: Cachets.Worker.get(via_tuple(name), key, opts)
   @doc """
   Delete the key and value from default storage
 
@@ -109,7 +110,7 @@ defmodule Cachets do
       iex> Cachets.gets(:foo)
       []
   """
-  def deletes(key, opts \\ []), do: GenServer.cast(@common_genserver, {:delete, key, opts})
+  def deletes(key, opts \\ []), do: Cachets.Common.delete(@common_genserver, key, opts)
   @doc """
   Delete the key and value from created before storage (in test pre-created "foo")
 
@@ -122,7 +123,7 @@ defmodule Cachets do
       iex> Cachets.get("foo", :bar)
       []
   """
-  def delete(name, key, opts \\ []), do: GenServer.cast(via_tuple(name), {:delete, key, opts})
+  def delete(name, key, opts \\ []), do: Cachets.Worker.delete(via_tuple(name), key, opts)
 
   def via_tuple(name) do
     {:via, Registry, {Cachets.Worker.Registry, name}}

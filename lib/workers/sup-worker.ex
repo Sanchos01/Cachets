@@ -1,6 +1,5 @@
 defmodule Cachets.Worker.Supervisor do
   use Supervisor
-  @ets_preset [:set, :public, :named_table]
   @def_timeout Application.get_env(:cachets, :timeout)
   import Cachets.Utils, only: [name_for_table: 1]
 
@@ -25,9 +24,24 @@ defmodule Cachets.Worker.Supervisor do
         _ -> [t_name: table_name, timeout: @def_timeout]
       end
     with nil <- GenServer.whereis(via_name),
-         _ets <- :ets.new(table_name, @ets_preset),
+         :undefined <- :ets.info(table_name),
          {:ok, _pid} = Supervisor.start_child(__MODULE__, [via_name, send_opts]),
          do: :ok
   end
   def new_cache(_, _), do: {:error, "name must be string"}
+
+  def destroy_cache(name, opts \\ [])
+  def destroy_cache(name, opts) when is_bitstring(name) do
+    table_name = name_for_table(name)
+    via_name = {:via, Registry, {Cachets.Worker.Registry, name}}
+    if GenServer.whereis(via_name) == nil
+    do
+      {:error, "This cache is not exists"}
+    else
+      Cachets.Worker.stop(via_name)
+      :ets.delete(table_name)
+      :ok
+    end
+  end
+  def destroy_cache(_, _), do: {:error, "name must be string"}
 end

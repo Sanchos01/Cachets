@@ -28,4 +28,12 @@ defmodule CachetsTest do
     Cachets.new_cache("bar")
     assert GenServer.whereis(Cachets.via_tuple("bar")) != nil
   end
+
+  test "destroing ETS-cache" do
+    Cachets.new_cache("bar")
+    pid = GenServer.whereis(Cachets.via_tuple("bar"))
+    ref = Process.monitor(pid)
+    Cachets.destroy_cache("bar")
+    assert_receive {:DOWN, ^ref, :process, ^pid, :normal}, 5_000
+  end
 end

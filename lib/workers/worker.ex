@@ -1,10 +1,13 @@
 defmodule Cachets.Worker do
   require Logger
   use ExActor.GenServer
-  import Cachets.Utils, only: [nowstamp: 0]
+  import Cachets.Utils
+  @ets_preset [:set, :public, :named_table]
 
   def start_link(name, opts \\ [])
   defstart start_link(name, opts), links: true, gen_server_opts: [name: name] do
+    {:via, _Registry, {Cachets.Worker.Registry, pre_table_name}} = name
+    pre_table_name |> name_for_table() |> :ets.new(@ets_preset)
     timeout_after(opts[:timeout])
     initial_state([name_of_attached_table: opts[:t_name]])
   end
@@ -53,4 +56,6 @@ defmodule Cachets.Worker do
     :ets.delete(state[:name_of_attached_table], key)
     new_state(Enum.reject(state, fn {el, _ttl} -> el == key end))
   end
+
+  defcast stop, do: stop_server(:normal)
 end
