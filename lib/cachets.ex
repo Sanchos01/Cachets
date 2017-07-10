@@ -13,7 +13,7 @@ defmodule Cachets do
   @ets_preset [:set, :public, :named_table]
   defdelegate new_cache(name, opts \\ []), to: Cachets.Worker.Supervisor
   defdelegate destroy_cache(name, opts \\ []), to: Cachets.Worker.Supervisor
-  import Cachets.Utils, only: [name_for_table: 1]
+  import Cachets.Utils, only: [name_for_table: 1, via_tuple: 1]
 
   def start(_type, args) do
     import Supervisor.Spec, warn: false
@@ -124,8 +124,4 @@ defmodule Cachets do
       []
   """
   def delete(name, key, opts \\ []), do: Cachets.Worker.delete(via_tuple(name), key, opts)
-
-  def via_tuple(name) do
-    {:via, Registry, {Cachets.Worker.Registry, name}}
-  end
 end

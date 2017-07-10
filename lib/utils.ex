@@ -7,4 +7,8 @@ defmodule Cachets.Utils do
   def name_for_table(name) do
     String.to_atom("__Cachets__" <> name <> "__")
   end
+
+  def via_tuple(name) do
+    {:via, Registry, {Cachets.Worker.Registry, name}}
+  end
 end

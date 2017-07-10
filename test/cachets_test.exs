@@ -1,5 +1,6 @@
 defmodule CachetsTest do
   use ExUnit.Case
+  import Cachets.Utils, only: [via_tuple: 1]
   doctest Cachets
 
   setup_all do
@@ -23,15 +24,15 @@ defmodule CachetsTest do
   end
 
   test "creating new ETS-cache" do
-    assert GenServer.whereis(Cachets.via_tuple("foo")) != nil # Customized table
-    assert GenServer.whereis(Cachets.via_tuple("bar")) == nil
+    assert GenServer.whereis(via_tuple("foo")) != nil # Customized table
+    assert GenServer.whereis(via_tuple("bar")) == nil
     Cachets.new_cache("bar")
-    assert GenServer.whereis(Cachets.via_tuple("bar")) != nil
+    assert GenServer.whereis(via_tuple("bar")) != nil
   end
 
   test "destroing ETS-cache" do
     Cachets.new_cache("bar")
-    pid = GenServer.whereis(Cachets.via_tuple("bar"))
+    pid = GenServer.whereis(via_tuple("bar"))
     ref = Process.monitor(pid)
     Cachets.destroy_cache("bar")
     assert_receive {:DOWN, ^ref, :process, ^pid, :normal}, 5_000

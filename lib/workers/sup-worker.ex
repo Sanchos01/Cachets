@@ -31,8 +31,7 @@ defmodule Cachets.Worker.Supervisor do
   def new_cache(_, _), do: {:error, "name must be string"}
 
   def destroy_cache(name, opts \\ [])
-  def destroy_cache(name, opts) when is_bitstring(name) do
-    table_name = name_for_table(name)
+  def destroy_cache(name, _opts) when is_bitstring(name) do
     via_name = {:via, Registry, {Cachets.Worker.Registry, name}}
     case GenServer.whereis(via_name) do
       nil -> {:error, "This cache is not exists"}
