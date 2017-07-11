@@ -37,4 +37,13 @@ defmodule CachetsTest do
     Cachets.destroy_cache("bar")
     assert_receive {:DOWN, ^ref, :process, ^pid, :normal}, 5_000
   end
+
+  test "ETS-cache don't crash after unpredicted messages" do
+    pid = GenServer.whereis(via_tuple("foo"))
+    ref = Process.monitor(pid)
+    GenServer.call(pid, :unpredicted_call)
+    GenServer.cast(pid, :unpredicted_cast)
+    send(pid, :unpredicted_message)
+    refute_receive {:DOWN, ^ref, _, ^pid, _}, 100
+  end
 end
