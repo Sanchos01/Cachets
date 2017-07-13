@@ -4,7 +4,6 @@ defmodule Cachets.Worker do
   import Cachets.Utils
   @ets_preset [:set, :public, :named_table]
 
-  def start_link(name, opts \\ [])
   defstart start_link(name, opts), links: true, gen_server_opts: [name: name] do
     :ets.new(opts[:t_name], @ets_preset)
     timeout_after(opts[:timeout])

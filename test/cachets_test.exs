@@ -25,6 +25,10 @@ defmodule CachetsTest do
     refute GenServer.whereis(via_tuple("bar"))
     Cachets.new_cache("bar")
     assert GenServer.whereis(via_tuple("bar"))
+    Cachets.new_cache("bar2", timeout: 1000)
+    assert GenServer.whereis(via_tuple("bar2"))
+    Cachets.Worker.Supervisor.new_cache("bar3")
+    assert GenServer.whereis(via_tuple("bar3"))
   end
 
   test "destroing ETS-cache" do
