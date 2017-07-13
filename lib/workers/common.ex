@@ -25,8 +25,8 @@ defmodule Cachets.Common do
   end
 
   defcast add(key, value, opts), state: state do
-    Logger.debug("adding values to default storage")
     :ets.insert(@table, {key, value})
+    Logger.debug("add value to default storage")
     if (ttl = opts[:ttl]) |> is_integer do
       new_state([{key, nowstamp() + ttl}|Enum.reject(state, fn {el, _ttl} -> el == key end)])
     else
@@ -35,9 +35,9 @@ defmodule Cachets.Common do
   end
 
   defcall add_new(key, value, opts), state: state do
-    Logger.debug("adding values to default storage")
     case :ets.insert_new(@table, {key, value}) do
-      true -> if (ttl = opts[:ttl]) |> is_integer do
+      true -> Logger.debug("add new value to default storage")
+              if (ttl = opts[:ttl]) |> is_integer do
                 set_and_reply([{key, nowstamp() + ttl}|Enum.reject(state, fn {el, _ttl} -> el == key end)], :ok)
               else
                 set_and_reply([{key, :inf}|Enum.reject(state, fn {el, _ttl} -> el == key end)], :ok)
