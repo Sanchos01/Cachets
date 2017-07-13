@@ -31,19 +31,33 @@ defmodule CachetsTest do
   end
 
   test "destroing ETS-cache" do
-    Cachets.new_cache("bar")
-    pid = GenServer.whereis(via_tuple("bar"))
+    Cachets.new_cache("baz")
+    pid = GenServer.whereis(via_tuple("baz"))
     ref = Process.monitor(pid)
-    Cachets.destroy_cache("bar")
+    Cachets.destroy_cache("baz")
     assert_receive {:DOWN, ^ref, :process, ^pid, :normal}, 5_000
   end
 
-  test "ETS-cache don't crash after unpredicted messages" do
+  test "ETS-cache don't crash after receiving unpredicted messages" do
     pid = GenServer.whereis(via_tuple("foo"))
     ref = Process.monitor(pid)
     GenServer.call(pid, :unpredicted_call)
     GenServer.cast(pid, :unpredicted_cast)
     send(pid, :unpredicted_message)
     refute_receive {:DOWN, ^ref, _, ^pid, _}, 100
+  end
+
+  test "Common ETS-cache don't crash after receiving unpredicted messages" do
+    pid = GenServer.whereis(:'Elixir.Cachets.Common')
+    ref = Process.monitor(pid)
+    GenServer.call(pid, :unpredicted_call)
+    GenServer.cast(pid, :unpredicted_cast)
+    send(pid, :unpredicted_message)
+    refute_receive {:DOWN, ^ref, _, ^pid, _}, 100
+  end
+
+  test "Registry module" do
+    assert GenServer.whereis(:'Elixir.Cachets.Worker.Registry')
+    assert {:error, _} = Cachets.Worker.Registry.start_link()
   end
 end

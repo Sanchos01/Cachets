@@ -23,10 +23,10 @@ defmodule Cachets.Worker.Supervisor do
         true -> [t_name: table_name, timeout: t_out]
         _ -> [t_name: table_name, timeout: @def_timeout]
       end
-    with nil <- GenServer.whereis(via_name),
-         :undefined <- :ets.info(table_name),
-         {:ok, _pid} = Supervisor.start_child(__MODULE__, [via_name, send_opts]),
-         do: :ok
+    nil = GenServer.whereis(via_name)
+    :undefined = :ets.info(table_name)
+    {:ok, _pid} = Supervisor.start_child(__MODULE__, [via_name, send_opts])
+    :ok
   end
   def new_cache(_, _), do: {:error, "name must be string"}
 

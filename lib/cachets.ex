@@ -13,7 +13,7 @@ defmodule Cachets do
   @ets_preset [:set, :public, :named_table]
   defdelegate new_cache(name, opts \\ []), to: Cachets.Worker.Supervisor
   defdelegate destroy_cache(name, opts \\ []), to: Cachets.Worker.Supervisor
-  import Cachets.Utils, only: [name_for_table: 1, via_tuple: 1]
+  import Cachets.Utils, only: [via_tuple: 1]
 
   def start(_type, args) do
     import Supervisor.Spec, warn: false
@@ -50,10 +50,7 @@ defmodule Cachets do
       iex> Cachets.add("foo", :bar, "baz")
       :ok
   """
-  def add(name, key, value, opts \\ []) do
-    with [_|_] <- :ets.info(name_for_table(name)),
-    do: Cachets.Worker.add(via_tuple(name), key, value, opts)
-  end
+  def add(name, key, value, opts \\ []), do: Cachets.Worker.add(via_tuple(name), key, value, opts)
   @doc """
   Add the key and value to default storage (but don't rewrite)
 
