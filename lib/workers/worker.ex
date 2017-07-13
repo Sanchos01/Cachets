@@ -10,11 +10,12 @@ defmodule Cachets.Worker do
     timeout_after(opts[:timeout])
     initial_state([name_of_attached_table: opts[:t_name]])
   end
-  
+
   defhandleinfo :timeout, state: [name_of_attached_table: _], do: noreply()
   defhandleinfo :timeout, state: state do
+    now = nowstamp()
     {olds, newstate} = Enum.split_with(state, fn
-      {_key, ttl} when is_integer(ttl) -> ttl < nowstamp()
+      {_key, ttl} when is_integer(ttl) -> ttl < now
       _ -> false end)
     if length(olds) > 0 do
       Logger.debug("to_delete: #{inspect olds} from #{inspect newstate[:name_of_attached_table]}, newstate: #{inspect newstate}")
@@ -50,7 +51,7 @@ defmodule Cachets.Worker do
   defcall get(key, _opts), state: state do
     reply(:ets.lookup(state[:name_of_attached_table], key))
   end
-  
+
   defcast delete(key, _opts), state: state do
     :ets.delete(state[:name_of_attached_table], key)
     new_state(Enum.reject(state, fn {el, _ttl} -> el == key end))

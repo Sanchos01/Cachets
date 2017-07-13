@@ -6,28 +6,25 @@ defmodule CachetsTest do
   setup_all do
     Cachets.new_cache("foo")
   end
-  test "add to common" do
-    Cachets.adds(:key, 123)
-    assert [{:key, 123}] == Cachets.gets(:key)
-  end
 
-  test "delete from common" do
-    Cachets.adds(:key, 123)
-    Cachets.deletes(:key)
-    assert Cachets.gets(:key) == []
-  end
-
-  test "record self-delete" do
+  test "record self-delete from common-server" do
     Cachets.adds(:key, 123, ttl: 10)
     :timer.sleep(200)
     assert Cachets.gets(:key) == []
   end
 
+  test "record self-delete from worker" do
+    assert GenServer.whereis(via_tuple("foo"))
+    Cachets.add("foo", :key, 123, ttl: 10)
+    :timer.sleep(200)
+    assert Cachets.get("foo", :key) == []
+  end
+
   test "creating new ETS-cache" do
-    assert GenServer.whereis(via_tuple("foo")) != nil # Customized table
-    assert GenServer.whereis(via_tuple("bar")) == nil
+    assert GenServer.whereis(via_tuple("foo")) # Customized table
+    refute GenServer.whereis(via_tuple("bar"))
     Cachets.new_cache("bar")
-    assert GenServer.whereis(via_tuple("bar")) != nil
+    assert GenServer.whereis(via_tuple("bar"))
   end
 
   test "destroing ETS-cache" do
