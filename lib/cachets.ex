@@ -10,15 +10,12 @@ defmodule Cachets do
     Cachets.gets(:foo) # "bar"
   """
   @common_genserver Application.get_env(:cachets, :common_genserver)
-  @common_table Application.get_env(:cachets, :common_table)
-  @ets_preset [:set, :public, :named_table]
   defdelegate new_cache(name, opts \\ []), to: Cachets.Worker.Supervisor
   defdelegate destroy_cache(name), to: Cachets.Worker.Supervisor
   import Cachets.Utils, only: [via_tuple: 1]
 
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
-    :ets.new(@common_table, @ets_preset)
 
     children = [
       worker(Cachets.Common, [@common_genserver]),

@@ -26,7 +26,11 @@ config :logger,
 config :cachets,
   common_genserver: Cachets.Common,
   common_table: :__Cachets__common__,
-  timeout: 100
+  timeout: 100,
+# common_table_protection and worker_table_protection must be in ~w(protected public private)a
+  common_table_protection: :protected,
+  worker_table_protection: :protected,
+  add_caches: []
 
 # It is also possible to import configuration files, relative to this
 # directory. For example, you can emulate configuration per environment

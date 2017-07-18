@@ -1,6 +1,7 @@
 defmodule Cachets.Worker.Supervisor do
   use Supervisor
   @def_timeout Application.get_env(:cachets, :timeout)
+  @worker_table_protection Application.get_env(:cachets, :worker_table_protection)
   import Cachets.Utils, only: [name_for_table: 1]
 
   def start_link do
@@ -18,14 +19,17 @@ defmodule Cachets.Worker.Supervisor do
   def new_cache(name, opts) when is_bitstring(name) do
     table_name = name_for_table(name)
     via_name = {:via, Registry, {Cachets.Worker.Registry, name}}
-    send_opts =
-      case (t_out = opts[:timeout]) |> is_integer() do
-        true -> [t_name: table_name, timeout: t_out]
-        _ -> [t_name: table_name, timeout: @def_timeout]
-      end
+    timeout = case opts[:timeout] do
+      int when is_integer(int) -> int
+      _ -> @def_timeout
+    end
+    protection = case opts[:protection] do
+      atom when atom in ~w(protected public private)a -> atom
+      _ -> @worker_table_protection
+    end
     nil = GenServer.whereis(via_name)
     :undefined = :ets.info(table_name)
-    {:ok, _pid} = Supervisor.start_child(__MODULE__, [via_name, send_opts])
+    {:ok, _pid} = Supervisor.start_child(__MODULE__, [via_name, [table_name: table_name, protection: protection, timeout: timeout]])
     :ok
   end
   def new_cache(_, _), do: {:error, "name must be string"}

@@ -1,6 +1,7 @@
 defmodule CachetsTest do
   use ExUnit.Case
-  import Cachets.Utils, only: [via_tuple: 1]
+  import Cachets.Utils, only: [via_tuple: 1, name_for_table: 1]
+  @worker_table_protection Application.get_env(:cachets, :worker_table_protection)
   doctest Cachets
 
   setup_all do
@@ -12,7 +13,7 @@ defmodule CachetsTest do
     assert GenServer.whereis(via_tuple("qwerty"))
   end
 
-  test "record self-delete from common-server" do
+  test "Record self-delete from common-server" do
     Cachets.adds(:key, 123, ttl: 50)
     :timer.sleep(20)
     assert [key: 123] == Cachets.gets(:key)
@@ -20,7 +21,7 @@ defmodule CachetsTest do
     assert [] = Cachets.gets(:key)
   end
 
-  test "record self-delete from worker" do
+  test "Record self-delete from worker" do
     assert GenServer.whereis(via_tuple("foo"))
     Cachets.add("foo", :key, 123, ttl: 50)
     :timer.sleep(20)
@@ -29,7 +30,7 @@ defmodule CachetsTest do
     assert [] = Cachets.get("foo", :key)
   end
 
-  test "creating new ETS-cache" do
+  test "Creating new ETS-cache" do
     assert GenServer.whereis(via_tuple("foo")) # Customized table
     refute GenServer.whereis(via_tuple("bar"))
     Cachets.new_cache("bar")
@@ -40,7 +41,7 @@ defmodule CachetsTest do
     assert GenServer.whereis(via_tuple("bar3"))
   end
 
-  test "destroing ETS-cache" do
+  test "Destroing ETS-cache" do
     Cachets.new_cache("baz")
     pid = GenServer.whereis(via_tuple("baz"))
     ref = Process.monitor(pid)
@@ -97,5 +98,14 @@ defmodule CachetsTest do
   test "Registry module" do
     assert GenServer.whereis(:'Elixir.Cachets.Worker.Registry')
     assert {:error, _} = Cachets.Worker.Registry.start_link()
+  end
+
+  test "Start worker with wrong options" do
+    assert :ok = Cachets.new_cache("true", [protection: :public])
+    assert :ok = Cachets.new_cache("wrong1", [protection: 123])
+    assert :ok = Cachets.new_cache("wrong2", [protection: :foo])
+    assert :public = :ets.info(name_for_table("true"))[:protection]
+    assert @worker_table_protection = :ets.info(name_for_table("wrong1"))[:protection]
+    assert @worker_table_protection = :ets.info(name_for_table("wrong2"))[:protection]
   end
 end

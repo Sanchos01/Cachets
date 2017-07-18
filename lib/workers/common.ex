@@ -2,10 +2,14 @@ defmodule Cachets.Common do
   require Logger
   use ExActor.GenServer
   @table Application.get_env(:cachets, :common_table)
+  @common_table Application.get_env(:cachets, :common_table)
+  @common_table_protection Application.get_env(:cachets, :common_table_protection) || :protected
+  @ets_preset [:set, :named_table]
   import Cachets.Utils, only: [nowstamp: 0]
 
   def start_link(name, opts \\ [])
   defstart start_link(name, opts), links: true, gen_server_opts: [name: name] do
+    :ets.new(@common_table, [@common_table_protection|@ets_preset])
     timeout_after(Application.get_env(:cachets, :timeout))
     initial_state([])
   end

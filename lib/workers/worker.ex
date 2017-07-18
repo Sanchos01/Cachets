@@ -2,12 +2,12 @@ defmodule Cachets.Worker do
   require Logger
   use ExActor.GenServer
   import Cachets.Utils
-  @ets_preset [:set, :public, :named_table]
+  @ets_preset [:set, :named_table]
 
   defstart start_link(name, opts), links: true, gen_server_opts: [name: name] do
-    :ets.new(opts[:t_name], @ets_preset)
+    :ets.new(opts[:table_name], [(opts[:protection] || :protected)|@ets_preset])
     timeout_after(opts[:timeout])
-    initial_state([name_of_attached_table: opts[:t_name]])
+    initial_state([name_of_attached_table: opts[:table_name]])
   end
 
   defhandleinfo :timeout, state: [name_of_attached_table: _], do: noreply()
