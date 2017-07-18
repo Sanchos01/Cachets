@@ -1,4 +1,5 @@
 defmodule Cachets do
+  require Logger
   use Application
   @moduledoc """
   Simple implemintation of ETS-storage with following features:
@@ -10,21 +11,14 @@ defmodule Cachets do
     Cachets.gets(:foo) # "bar"
   """
   @common_genserver Application.get_env(:cachets, :common_genserver)
+  @common_table Application.get_env(:cachets, :common_table)
   defdelegate new_cache(name, opts \\ []), to: Cachets.Worker.Supervisor
   defdelegate destroy_cache(name), to: Cachets.Worker.Supervisor
   import Cachets.Utils, only: [via_tuple: 1]
 
   def start(_type, _args) do
-    import Supervisor.Spec, warn: false
-
-    children = [
-      worker(Cachets.Common, [@common_genserver]),
-      supervisor(Cachets.Worker.Supervisor, []),
-      supervisor(Registry, [:unique, Cachets.Worker.Registry])
-    ]
-
-    opts = [strategy: :one_for_one, name: Cachets.Supervisor]
-    {:ok, pid} = Supervisor.start_link(children, opts)
+    {:ok, pid} = Cachets.Supervisor.start_link()
+    Logger.info("supervisor - #{inspect pid}")
     case Application.get_env(:cachets, :add_caches) do
         lst = [_|_] -> Enum.map(lst, &(new_cache(&1)))
         _ -> :ok

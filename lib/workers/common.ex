@@ -9,7 +9,17 @@ defmodule Cachets.Common do
 
   def start_link(name, opts \\ [])
   defstart start_link(name, opts), links: true, gen_server_opts: [name: name] do
-    :ets.new(@common_table, [@common_table_protection|@ets_preset])
+    supervisor_pid = GenServer.whereis(:'Elixir.Cachets.Supervisor')
+    try do
+      :ets.new(@common_table, [@common_table_protection|[{:heir, supervisor_pid, "transfered from common"}|@ets_preset]])
+    rescue
+      _error in ArgumentError ->
+        send supervisor_pid, {:return_table, self()}
+        receive do
+          {:"ETS-TRANSFER", table_name, _pid, "return back common_table"} -> :ok
+          :no_msg -> {:error, "Table with such name already exists"}
+        end
+    end
     timeout_after(Application.get_env(:cachets, :timeout))
     initial_state([])
   end

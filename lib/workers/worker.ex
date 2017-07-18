@@ -5,9 +5,20 @@ defmodule Cachets.Worker do
   @ets_preset [:set, :named_table]
 
   defstart start_link(name, opts), links: true, gen_server_opts: [name: name] do
-    :ets.new(opts[:table_name], [(opts[:protection] || :protected)|@ets_preset])
+    supervisor_pid = GenServer.whereis(:'Elixir.Cachets.Supervisor')
+    table_name = opts[:table_name]
+    try do
+      :ets.new(table_name, [(opts[:protection] || :protected)|[{:heir, supervisor_pid, "transfered from worker"}|@ets_preset]])
+    rescue
+      _e in ArgumentError ->
+        send supervisor_pid, {:return_table, self()}
+        receive do
+          {:"ETS-TRANSFER", table_name, _pid, "return back worker_table"} -> :ok
+          :no_msg -> {:error, "Table with such name already exists"}
+        end
+    end
     timeout_after(opts[:timeout])
-    initial_state([name_of_attached_table: opts[:table_name]])
+    initial_state([name_of_attached_table: table_name])
   end
 
   defhandleinfo :timeout, state: [name_of_attached_table: _], do: noreply()
