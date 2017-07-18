@@ -5,10 +5,10 @@ defmodule Cachets.Worker.Supervisor do
   import Cachets.Utils, only: [name_for_table: 1]
 
   def start_link do
-    Supervisor.start_link(__MODULE__, :ok, name: __MODULE__)
+    Supervisor.start_link(__MODULE__, [], name: __MODULE__)
   end
 
-  def init(:ok) do
+  def init(_) do
     children = [
       worker(Cachets.Worker, [], restart: :transient)
     ]

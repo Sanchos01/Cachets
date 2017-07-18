@@ -9,14 +9,14 @@ defmodule Cachets.Common do
 
   def start_link(name, opts \\ [])
   defstart start_link(name, opts), links: true, gen_server_opts: [name: name] do
-    supervisor_pid = GenServer.whereis(:'Elixir.Cachets.Supervisor')
+    saver_pid = GenServer.whereis(:'Elixir.Cachets.Saver')
     try do
-      :ets.new(@common_table, [@common_table_protection|[{:heir, supervisor_pid, "transfered from common"}|@ets_preset]])
+      :ets.new(@common_table, [@common_table_protection|[{:heir, saver_pid, "transfered from common"}|@ets_preset]])
     rescue
       _error in ArgumentError ->
-        send supervisor_pid, {:return_table, self()}
+        send saver_pid, {:return_table_for_common, self()}
         receive do
-          {:"ETS-TRANSFER", table_name, _pid, "return back common_table"} -> :ok
+          {:"ETS-TRANSFER", @common_table, _pid, "return back common_table"} -> :ok
           :no_msg -> {:error, "Table with such name already exists"}
         end
     end

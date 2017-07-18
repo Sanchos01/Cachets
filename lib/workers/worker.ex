@@ -5,15 +5,15 @@ defmodule Cachets.Worker do
   @ets_preset [:set, :named_table]
 
   defstart start_link(name, opts), links: true, gen_server_opts: [name: name] do
-    supervisor_pid = GenServer.whereis(:'Elixir.Cachets.Supervisor')
+    saver_pid = GenServer.whereis(:'Elixir.Cachets.Saver')
     table_name = opts[:table_name]
     try do
-      :ets.new(table_name, [(opts[:protection] || :protected)|[{:heir, supervisor_pid, "transfered from worker"}|@ets_preset]])
+      :ets.new(table_name, [(opts[:protection] || :protected)|[{:heir, saver_pid, "transfered from worker"}|@ets_preset]])
     rescue
       _e in ArgumentError ->
-        send supervisor_pid, {:return_table, self()}
+        send saver_pid, {:return_table_for_worker, self()}
         receive do
-          {:"ETS-TRANSFER", table_name, _pid, "return back worker_table"} -> :ok
+          {:"ETS-TRANSFER", ^table_name, _pid, "return back worker_table"} -> :ok
           :no_msg -> {:error, "Table with such name already exists"}
         end
     end
