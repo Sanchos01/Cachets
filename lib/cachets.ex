@@ -17,7 +17,6 @@ defmodule Cachets do
 
   def start(_type, _args) do
     {:ok, pid} = Cachets.Supervisor.start_link()
-    Logger.info("supervisor - #{inspect pid}")
     case Application.get_env(:cachets, :add_caches) do
         lst = [_|_] -> Enum.map(lst, &(new_cache(&1)))
         _ -> :ok

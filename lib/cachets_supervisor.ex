@@ -1,5 +1,6 @@
 defmodule Cachets.Supervisor do
   use Supervisor
+  require Logger
   @common_genserver Application.get_env(:cachets, :common_genserver)
 
   def start_link do
@@ -15,6 +16,7 @@ defmodule Cachets.Supervisor do
     ]
 
     opts = [strategy: :one_for_one, name: __MODULE__]
+    Logger.info("start supervisor - #{inspect self()}")
     supervise(children, opts)
   end
 end

@@ -14,7 +14,7 @@ defmodule Cachets.Saver do
       {:return_table_for_worker, pid} -> :ets.give_away(table_name, pid, "return back worker_table")
                                          {:noreply, state}
     after
-      200 -> {:noreply, state}
+      100 -> {:noreply, state}
     end
   end
   def handle_info {:"ETS-TRANSFER", @common_table, _pid, "transfered from common"}, state do
@@ -23,7 +23,7 @@ defmodule Cachets.Saver do
       {:return_table_for_common, pid} -> :ets.give_away(@common_table, pid, "return back common_table")
                                          {:noreply, state}
     after
-      200 -> {:noreply, state}
+      100 -> {:noreply, state}
     end
   end
 

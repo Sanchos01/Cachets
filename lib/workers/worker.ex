@@ -10,7 +10,7 @@ defmodule Cachets.Worker do
     try do
       :ets.new(table_name, [(opts[:protection] || :protected)|[{:heir, saver_pid, "transfered from worker"}|@ets_preset]])
     rescue
-      error in ArgumentError ->
+      ArgumentError ->
         case :ets.info(table_name)[:owner] do
           ^saver_pid ->
             send saver_pid, {:return_table_for_worker, self()}
