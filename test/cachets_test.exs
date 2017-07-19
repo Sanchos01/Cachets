@@ -6,6 +6,9 @@ defmodule CachetsTest do
 
   setup_all do
     Cachets.new_cache("foo")
+    pid = GenServer.whereis(:'Elixir.Cachets.Common')
+    Process.exit(pid, :kill)
+    :timer.sleep(300)
   end
 
   test "App have worker and table, preassigned in config" do
@@ -37,7 +40,7 @@ defmodule CachetsTest do
     assert GenServer.whereis(via_tuple("bar"))
     Cachets.new_cache("bar2", timeout: 1000)
     assert GenServer.whereis(via_tuple("bar2"))
-    Cachets.Worker.Supervisor.new_cache("bar3")
+    assert :ok = Cachets.Worker.Supervisor.new_cache("bar3")
     assert GenServer.whereis(via_tuple("bar3"))
   end
 
@@ -107,5 +110,13 @@ defmodule CachetsTest do
     assert :public = :ets.info(name_for_table("true"))[:protection]
     assert @worker_table_protection = :ets.info(name_for_table("wrong1"))[:protection]
     assert @worker_table_protection = :ets.info(name_for_table("wrong2"))[:protection]
+  end
+
+  test "Killing caches don't destroy ETS-tab" do
+    assert :ok = Cachets.new_cache("123")
+    pid = GenServer.whereis(via_tuple("123"))
+    Process.exit(pid, :kill)
+    :timer.sleep(100)
+    assert [_|_] = :ets.info(name_for_table("123"))
   end
 end

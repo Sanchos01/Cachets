@@ -28,7 +28,6 @@ defmodule Cachets.Worker.Supervisor do
       _ -> @worker_table_protection
     end
     nil = GenServer.whereis(via_name)
-    :undefined = :ets.info(table_name)
     {:ok, _pid} = Supervisor.start_child(__MODULE__, [via_name, [table_name: table_name, protection: protection, timeout: timeout]])
     :ok
   end

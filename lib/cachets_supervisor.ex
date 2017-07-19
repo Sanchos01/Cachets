@@ -1,7 +1,6 @@
 defmodule Cachets.Supervisor do
   use Supervisor
   @common_genserver Application.get_env(:cachets, :common_genserver)
-  defdelegate new_cache(name, opts \\ []), to: Cachets.Worker.Supervisor
 
   def start_link do
     Supervisor.start_link(__MODULE__, [], name: __MODULE__)

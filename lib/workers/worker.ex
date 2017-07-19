@@ -10,11 +10,16 @@ defmodule Cachets.Worker do
     try do
       :ets.new(table_name, [(opts[:protection] || :protected)|[{:heir, saver_pid, "transfered from worker"}|@ets_preset]])
     rescue
-      _e in ArgumentError ->
-        send saver_pid, {:return_table_for_worker, self()}
-        receive do
-          {:"ETS-TRANSFER", ^table_name, _pid, "return back worker_table"} -> :ok
-          :no_msg -> {:error, "Table with such name already exists"}
+      error in ArgumentError ->
+        case :ets.info(table_name)[:owner] do
+          ^saver_pid ->
+            send saver_pid, {:return_table_for_worker, self()}
+            receive do
+              {:"ETS-TRANSFER", ^table_name, _pid, "return back worker_table"} -> :ok
+            after
+              300 -> raise "Table with such name already exists"
+            end
+          _another_pid -> raise "Table with such name already exists"
         end
     end
     timeout_after(opts[:timeout])

@@ -14,10 +14,15 @@ defmodule Cachets.Common do
       :ets.new(@common_table, [@common_table_protection|[{:heir, saver_pid, "transfered from common"}|@ets_preset]])
     rescue
       _error in ArgumentError ->
-        send saver_pid, {:return_table_for_common, self()}
-        receive do
-          {:"ETS-TRANSFER", @common_table, _pid, "return back common_table"} -> :ok
-          :no_msg -> {:error, "Table with such name already exists"}
+        case :ets.info(@common_table)[:owner] do
+          ^saver_pid ->
+            send saver_pid, {:return_table_for_common, self()}
+            receive do
+              {:"ETS-TRANSFER", @common_table, ^saver_pid, "return back common_table"} -> :ok
+            after
+              300 -> Logger.error("Table not exists"); raise "Table with such name already exists"
+            end
+          _another_pid -> raise "Table with such name already exists"
         end
     end
     timeout_after(Application.get_env(:cachets, :timeout))
