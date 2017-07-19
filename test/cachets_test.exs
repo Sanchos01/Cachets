@@ -1,4 +1,5 @@
 defmodule CachetsTest do
+  require Logger
   use ExUnit.Case
   import Cachets.Utils, only: [via_tuple: 1, name_for_table: 1]
   @worker_table_protection Application.get_env(:cachets, :worker_table_protection)
@@ -6,17 +7,19 @@ defmodule CachetsTest do
 
   setup_all do
     Cachets.new_cache("foo")
-    pid = GenServer.whereis(:'Elixir.Cachets.Common')
-    Process.exit(pid, :kill)
-    :timer.sleep(300)
+    # pid = GenServer.whereis(:'Elixir.Cachets.Common')
+    # Process.exit(pid, :kill)
+    # :timer.sleep(300)
   end
 
   test "App have worker and table, preassigned in config" do
+    Logger.debug("test 1")
     assert [_|_] = :ets.info(:__Cachets__qwerty__)
     assert GenServer.whereis(via_tuple("qwerty"))
   end
 
   test "Record self-delete from common-server" do
+    Logger.debug("test 2")
     Cachets.adds(:key, 123, ttl: 50)
     :timer.sleep(20)
     assert [key: 123] == Cachets.gets(:key)
@@ -25,6 +28,7 @@ defmodule CachetsTest do
   end
 
   test "Record self-delete from worker" do
+    Logger.debug("test 3")
     assert GenServer.whereis(via_tuple("foo"))
     Cachets.add("foo", :key, 123, ttl: 50)
     :timer.sleep(20)
@@ -34,17 +38,19 @@ defmodule CachetsTest do
   end
 
   test "Creating new ETS-cache" do
+    Logger.debug("test 4")
     assert GenServer.whereis(via_tuple("foo")) # Customized table
     refute GenServer.whereis(via_tuple("bar"))
-    Cachets.new_cache("bar")
+    assert :ok = Cachets.new_cache("bar")
     assert GenServer.whereis(via_tuple("bar"))
-    Cachets.new_cache("bar2", timeout: 1000)
+    assert :ok = Cachets.new_cache("bar2", timeout: 1000)
     assert GenServer.whereis(via_tuple("bar2"))
     assert :ok = Cachets.Worker.Supervisor.new_cache("bar3")
     assert GenServer.whereis(via_tuple("bar3"))
   end
 
   test "Destroing ETS-cache" do
+    Logger.debug("test 5")
     Cachets.new_cache("baz")
     pid = GenServer.whereis(via_tuple("baz"))
     ref = Process.monitor(pid)
@@ -53,6 +59,7 @@ defmodule CachetsTest do
   end
 
   test "ETS-cache don't crash after receiving unpredicted messages" do
+    Logger.debug("test 6")
     pid = GenServer.whereis(via_tuple("foo"))
     ref = Process.monitor(pid)
     GenServer.call(pid, :unpredicted_call)
@@ -62,6 +69,7 @@ defmodule CachetsTest do
   end
 
   test "Common ETS-cache don't crash after receiving unpredicted messages" do
+    Logger.debug("test 7")
     pid = GenServer.whereis(:'Elixir.Cachets.Common')
     ref = Process.monitor(pid)
     GenServer.call(pid, :unpredicted_call)
@@ -71,18 +79,21 @@ defmodule CachetsTest do
   end
 
   test "Add_new to common-server" do
+    Logger.debug("test 8")
     assert :ok = Cachets.adds_new(:uniqal, 123)
     assert [_|_] = Cachets.gets(:uniqal)
     assert {:error, "this key already exist"} = Cachets.adds_new(:uniqal, 123)
   end
 
   test "Add_new to worker" do
+    Logger.debug("test 9")
     assert :ok = Cachets.add_new("foo", :uniqal, 123)
     assert [_|_] = Cachets.get("foo", :uniqal)
     assert {:error, "this key already exist"} = Cachets.add_new("foo", :uniqal, 123)
   end
 
   test "Add_new to common-server with self-delete option" do
+    Logger.debug("test 10")
     assert :ok = Cachets.adds_new(:super_uniqal, 123, ttl: 50)
     :timer.sleep(20)
     assert [super_uniqal: 123] == Cachets.gets(:super_uniqal)
@@ -91,6 +102,7 @@ defmodule CachetsTest do
   end
 
   test "Add_new to worker with self-delete option" do
+    Logger.debug("test 11")
     assert :ok = Cachets.add_new("foo", :super_uniqal, 123, ttl: 50)
     :timer.sleep(20)
     assert [super_uniqal: 123] == Cachets.get("foo", :super_uniqal)
@@ -99,11 +111,13 @@ defmodule CachetsTest do
   end
 
   test "Registry module" do
+    Logger.debug("test 12")
     assert GenServer.whereis(:'Elixir.Cachets.Worker.Registry')
     assert {:error, _} = Cachets.Worker.Registry.start_link()
   end
 
   test "Start worker with wrong options" do
+    Logger.debug("test 13")
     assert :ok = Cachets.new_cache("true", [protection: :public])
     assert :ok = Cachets.new_cache("wrong1", [protection: 123])
     assert :ok = Cachets.new_cache("wrong2", [protection: :foo])
@@ -113,6 +127,7 @@ defmodule CachetsTest do
   end
 
   test "Killing caches don't destroy ETS-tab" do
+    Logger.debug("test 14")
     assert :ok = Cachets.new_cache("123")
     pid = GenServer.whereis(via_tuple("123"))
     Process.exit(pid, :kill)

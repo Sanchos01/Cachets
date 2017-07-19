@@ -43,7 +43,7 @@ defmodule Cachets.Worker do
 
   defcast add(key, value, opts), state: state do
     :ets.insert(state[:name_of_attached_table], {key, value})
-    Logger.debug("add value to #{inspect state[:name_of_attached_table]}")
+    Logger.debug("add value: #{inspect {key, value, opts}} to #{inspect state[:name_of_attached_table]}")
     if (ttl = opts[:ttl]) |> is_integer do
       new_state([{key, nowstamp() + ttl}|Enum.reject(state, fn {el, _ttl} -> el == key end)])
     else
@@ -53,7 +53,7 @@ defmodule Cachets.Worker do
 
   defcall add_new(key, value, opts), state: state do
     case :ets.insert_new(state[:name_of_attached_table], {key, value}) do
-      true -> Logger.debug("add new value to #{inspect state[:name_of_attached_table]}")
+      true -> Logger.debug("add new value: #{inspect {key, value, opts}} to #{inspect state[:name_of_attached_table]}")
               if (ttl = opts[:ttl]) |> is_integer do
                 set_and_reply([{key, nowstamp() + ttl}|Enum.reject(state, fn {el, _ttl} -> el == key end)], :ok)
               else

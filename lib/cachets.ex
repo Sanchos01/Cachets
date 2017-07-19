@@ -29,7 +29,7 @@ defmodule Cachets do
 
   ## Examples
 
-      iex> Cachets.adds(:foo, "bar")
+      iex> Cachets.adds(:foo1, "bar")
       :ok
   """
   def adds(key, value, opts \\ []), do: Cachets.Common.add(@common_genserver, key, value, opts)
@@ -38,29 +38,29 @@ defmodule Cachets do
 
   ## Examples
 
-      iex> Cachets.add("foo", :bar, "baz")
+      iex> Cachets.add("foo", :bar1, "baz")
       :ok
   """
   def add(name, key, value, opts \\ []), do: Cachets.Worker.add(via_tuple(name), key, value, opts)
   @doc """
-  Add the key and value to default storage (but don't rewrite)
+  Add the key and value to default storage, but don't rewrite if such key already exists
 
   ## Examples
 
-      iex> Cachets.adds(:foo, "bar")
+      iex> Cachets.adds(:foo2, "bar")
       :ok
-      iex> Cachets.adds_new(:foo, "bar")
+      iex> Cachets.adds_new(:foo2, "bar")
       {:error, "this key already exist"}
   """
   def adds_new(key, value, opts \\ []), do: Cachets.Common.add_new(@common_genserver, key, value, opts)
   @doc """
-  Add the key and value to created before storage (in test pre-created "foo") (but don't rewrite)
+  Add the key and value to created before storage, but don't rewrite if such key already exists (in test pre-created "foo")
 
   ## Examples
 
-      iex> Cachets.add("foo", :bar, "baz")
+      iex> Cachets.add("foo", :bar2, "baz")
       :ok
-      iex> Cachets.add_new("foo", :bar, "baz")
+      iex> Cachets.add_new("foo", :bar2, "baz")
       {:error, "this key already exist"}
   """
   def add_new(name, key, value, opts \\ []), do: Cachets.Worker.add_new(via_tuple(name), key, value, opts)
@@ -69,10 +69,10 @@ defmodule Cachets do
 
   ## Examples
 
-      iex> Cachets.adds(:foo, "bar")
+      iex> Cachets.adds(:foo3, "bar")
       :ok
-      iex> Cachets.gets(:foo)
-      [foo: "bar"]
+      iex> Cachets.gets(:foo3)
+      [foo3: "bar"]
   """
   def gets(key, opts \\ []), do: Cachets.Common.get(@common_genserver, key, opts)
   @doc """
@@ -80,10 +80,10 @@ defmodule Cachets do
 
   ## Examples
 
-      iex> Cachets.add("foo", :bar, "baz")
+      iex> Cachets.add("foo", :bar3, "baz")
       :ok
-      iex> Cachets.get("foo", :bar)
-      [bar: "baz"]
+      iex> Cachets.get("foo", :bar3)
+      [bar3: "baz"]
   """
   def get(name, key, opts \\ []), do: Cachets.Worker.get(via_tuple(name), key, opts)
   @doc """
@@ -91,11 +91,11 @@ defmodule Cachets do
 
   ## Examples
 
-      iex> Cachets.adds(:foo, "bar")
+      iex> Cachets.adds(:foo4, "bar")
       :ok
-      iex> Cachets.deletes(:foo)
+      iex> Cachets.deletes(:foo4)
       :ok
-      iex> Cachets.gets(:foo)
+      iex> Cachets.gets(:foo4)
       []
   """
   def deletes(key, opts \\ []), do: Cachets.Common.delete(@common_genserver, key, opts)
@@ -104,11 +104,11 @@ defmodule Cachets do
 
   ## Examples
 
-      iex> Cachets.add("foo", :bar, "baz")
+      iex> Cachets.add("foo", :bar4, "baz")
       :ok
-      iex> Cachets.delete("foo", :bar)
+      iex> Cachets.delete("foo", :bar4)
       :ok
-      iex> Cachets.get("foo", :bar)
+      iex> Cachets.get("foo", :bar4)
       []
   """
   def delete(name, key, opts \\ []), do: Cachets.Worker.delete(via_tuple(name), key, opts)
