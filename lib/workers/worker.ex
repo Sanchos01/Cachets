@@ -72,9 +72,10 @@ defmodule Cachets.Worker do
     new_state(Enum.reject(state, fn {el, _ttl} -> el == key end))
   end
 
-  defcast stop, do: stop_server(:normal)
+  defcast stop, state: state do
+    :ets.delete(state[:name_of_attached_table])
+    stop_server(:normal)
+  end
 
   def handle_info(msg, state), do: (Logger.debug("Unpredicted msg: #{inspect msg}, for: #{inspect self()}"); {:noreply, state})
-  def handle_call(request, from, state), do: (Logger.debug("Unpredicted gen-call: #{inspect request}, from: #{inspect from}, for: #{inspect self()}"); {:reply, nil, state})
-  def handle_cast(request, state), do: (Logger.debug("Unpredicted gen-cast: #{inspect request}, for: #{inspect self()}"); {:noreply, state})
 end

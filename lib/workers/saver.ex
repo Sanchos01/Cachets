@@ -28,6 +28,4 @@ defmodule Cachets.Saver do
   end
 
   def handle_info(msg, state), do: (Logger.debug("Unpredicted msg: #{inspect msg}, for Saver}"); {:noreply, state})
-  def handle_call(request, from, state), do: (Logger.debug("Unpredicted gen-call: #{inspect request}, from: #{inspect from}, for Saver}"); {:reply, nil, state})
-  def handle_cast(request, state), do: (Logger.debug("Unpredicted gen-cast: #{inspect request}, for Saver}"); {:noreply, state})
 end

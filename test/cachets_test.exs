@@ -13,6 +13,11 @@ defmodule CachetsTest do
   end
 
   setup context do
+    if tab = context[:num] do
+      on_exit fn ->
+        Cachets.destroy_cache(tab)
+      end
+    end
     if num = context[:num] do
       Logger.debug("start test #{inspect num}")
       on_exit fn ->
@@ -47,6 +52,7 @@ defmodule CachetsTest do
   end
 
   @tag num: 4
+  @tag tab: "bar"
   test "Creating new ETS-cache" do
     assert GenServer.whereis(via_tuple("foo")) # Customized table
     refute GenServer.whereis(via_tuple("bar"))
@@ -55,18 +61,21 @@ defmodule CachetsTest do
   end
 
   @tag num: 5
+  @tag tab: "bar2"
   test "Creating new ETS-cache with timeout" do
     assert :ok = Cachets.new_cache("bar2", timeout: 1000)
     assert GenServer.whereis(via_tuple("bar2"))
   end
 
   @tag num: 6
+  @tag tab: "bar3"
   test "Creating new ETS-cache from worker-supervisor" do
     assert :ok = Cachets.Worker.Supervisor.new_cache("bar3")
     assert GenServer.whereis(via_tuple("bar3"))
   end
 
   @tag num: 7
+  @tag tab: "bar4"
   test "Destroing ETS-cache" do
     Cachets.new_cache("bar4")
     pid = GenServer.whereis(via_tuple("bar4"))
@@ -79,20 +88,16 @@ defmodule CachetsTest do
   test "ETS-cache don't crash after receiving unpredicted messages" do
     pid = GenServer.whereis(via_tuple("foo"))
     ref = Process.monitor(pid)
-    GenServer.call(pid, :unpredicted_call)
-    GenServer.cast(pid, :unpredicted_cast)
     send(pid, :unpredicted_message)
-    refute_receive {:DOWN, ^ref, _, ^pid, _}, 20
+    refute_receive {:DOWN, ^ref, _, ^pid, _}, 50
   end
 
   @tag num: 9
   test "Common ETS-cache don't crash after receiving unpredicted messages" do
     pid = GenServer.whereis(:'Elixir.Cachets.Common')
     ref = Process.monitor(pid)
-    GenServer.call(pid, :unpredicted_call)
-    GenServer.cast(pid, :unpredicted_cast)
     send(pid, :unpredicted_message)
-    refute_receive {:DOWN, ^ref, _, ^pid, _}, 20
+    refute_receive {:DOWN, ^ref, _, ^pid, _}, 50
   end
 
   @tag num: 10
@@ -132,18 +137,21 @@ defmodule CachetsTest do
   end
 
   @tag num: 15
+  @tag tab: "true"
   test "Creating ETS-cache with normal options" do
     assert :ok = Cachets.new_cache("true", [protection: :public])
     assert :public = :ets.info(name_for_table("true"))[:protection]
   end
 
   @tag num: 16
+  @tag tab: "wrong"
   test "Creating ETS-cache with wrong options" do
     assert :ok = Cachets.new_cache("wrong", [protection: 123])
     assert @worker_table_protection = :ets.info(name_for_table("wrong"))[:protection]
   end
 
   @tag num: 17
+  @tag tab: "123"
   test "Killing caches don't destroy ETS-tab" do
     assert :ok = Cachets.new_cache("123")
     pid = GenServer.whereis(via_tuple("123"))
@@ -156,23 +164,28 @@ defmodule CachetsTest do
   test "Saver don't crash after receiving unpredicted messages" do
     pid = GenServer.whereis(:'Elixir.Cachets.Saver')
     ref = Process.monitor(pid)
-    GenServer.call(pid, :unpredicted_call)
-    GenServer.cast(pid, :unpredicted_cast)
     send(pid, :unpredicted_message)
     refute_receive {:DOWN, ^ref, _, ^pid, _}, 20
   end
 
   @tag num: 19
+  @tag tab: "baz1"
   test "Create ETS-cache, while table with such name already exists" do
     saver_pid = GenServer.whereis(:'Elixir.Cachets.Saver')
     :ets.new(name_for_table("baz1"), [:set, :public, :named_table, {:heir, saver_pid, "hi"}])
-    :ets.new(name_for_table("baz2"), [:set, :public, :named_table, {:heir, saver_pid, "hi"}])
-    :ets.give_away(name_for_table("baz2"), saver_pid, "hi")
     try do
       Cachets.new_cache("baz1")
     rescue
       MatchError -> :ok
     end
+  end
+
+  @tag num: 20
+  @tag tab: "baz2"
+  test "Create ETS-cache, while table with such name already exists and owner of table - Saver" do
+    saver_pid = GenServer.whereis(:'Elixir.Cachets.Saver')
+    :ets.new(name_for_table("baz2"), [:set, :public, :named_table, {:heir, saver_pid, "hi"}])
+    :ets.give_away(name_for_table("baz2"), saver_pid, "hi")
     try do
       Cachets.new_cache("baz2")
     rescue
