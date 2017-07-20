@@ -33,13 +33,14 @@ defmodule Cachets.Worker.Supervisor do
   end
   def new_cache(_, _), do: {:error, "name must be string"}
 
-  # def destroy_cache(name, opts \\ [])
-  def destroy_cache(name) when is_bitstring(name) do
+  def destroy_cache(name, opts \\ [])
+  def destroy_cache(name, opts) when is_bitstring(name) do
     via_name = {:via, Registry, {Cachets.Worker.Registry, name}}
+    with_ets = if opts[:with_ets] == false, do: false, else: true
     case GenServer.whereis(via_name) do
       nil -> {:error, "This cache is not exists"}
       pid -> ref = Process.monitor(pid)
-             Cachets.Worker.stop(via_name)
+             Cachets.Worker.stop(via_name, with_ets: with_ets)
              receive do
                {:DOWN, ^ref, :process, ^pid, :normal} -> :ok
              after
@@ -47,5 +48,5 @@ defmodule Cachets.Worker.Supervisor do
              end
     end
   end
-  def destroy_cache(_), do: {:error, "name must be string"}
+  def destroy_cache(_, _), do: {:error, "name must be string"}
 end

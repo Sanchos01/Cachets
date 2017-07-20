@@ -72,8 +72,10 @@ defmodule Cachets.Worker do
     new_state(Enum.reject(state, fn {el, _ttl} -> el == key end))
   end
 
-  defcast stop, state: state do
-    :ets.delete(state[:name_of_attached_table])
+  defcast stop(opts), state: state do
+    if true == opts[:with_ets] do
+      :ets.delete(state[:name_of_attached_table])
+    end
     stop_server(:normal)
   end
 

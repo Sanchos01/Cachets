@@ -12,7 +12,7 @@ defmodule Cachets do
   """
   @common_genserver Application.get_env(:cachets, :common_genserver)
   defdelegate new_cache(name, opts \\ []), to: Cachets.Worker.Supervisor
-  defdelegate destroy_cache(name), to: Cachets.Worker.Supervisor
+  defdelegate destroy_cache(name, opts \\ []), to: Cachets.Worker.Supervisor
   import Cachets.Utils, only: [via_tuple: 1]
 
   def start(_type, _args) do

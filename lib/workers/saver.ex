@@ -26,6 +26,9 @@ defmodule Cachets.Saver do
       100 -> {:noreply, state}
     end
   end
+  def handle_info {:"ETS-TRANSFER", _table, _pid, _msg}, state do
+    {:noreply, state}
+  end
 
   def handle_info(msg, state), do: (Logger.debug("Unpredicted msg: #{inspect msg}, for Saver}"); {:noreply, state})
 end
