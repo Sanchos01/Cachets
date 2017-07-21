@@ -7,6 +7,7 @@ defmodule CachetsTest do
 
   setup_all do
     Cachets.new_cache("foo")
+    Cachets.new_cache("foo2")
     pid = GenServer.whereis(:'Elixir.Cachets.Common')
     Process.exit(pid, :kill)
     :timer.sleep(100)
@@ -44,34 +45,30 @@ defmodule CachetsTest do
 
   @tag num: 3
   test "Record self-delete from worker" do
-    assert GenServer.whereis(via_tuple("foo"))
-    Cachets.add("foo", :key, 123, ttl: 20)
-    assert [key: 123] == Cachets.get("foo", :key)
+    assert GenServer.whereis(via_tuple("foo2"))
+    Cachets.add("foo2", :key, 123, ttl: 20)
+    assert [key: 123] == Cachets.get("foo2", :key)
     :timer.sleep(40)
-    assert [] = Cachets.get("foo", :key)
+    assert [] = Cachets.get("foo2", :key)
   end
 
   @tag num: 4
   @tag tab: "bar"
   test "Creating new ETS-cache" do
-    assert GenServer.whereis(via_tuple("foo"))
     refute GenServer.whereis(via_tuple("bar"))
     assert :ok = Cachets.new_cache("bar")
-    assert GenServer.whereis(via_tuple("bar"))
   end
 
   @tag num: 5
   @tag tab: "bar2"
   test "Creating new ETS-cache with timeout" do
     assert :ok = Cachets.new_cache("bar2", timeout: 1000)
-    assert GenServer.whereis(via_tuple("bar2"))
   end
 
   @tag num: 6
   @tag tab: "bar3"
   test "Creating new ETS-cache from worker-supervisor" do
     assert :ok = Cachets.Worker.Supervisor.new_cache("bar3")
-    assert GenServer.whereis(via_tuple("bar3"))
   end
 
   @tag num: 7
@@ -81,8 +78,7 @@ defmodule CachetsTest do
     pid = GenServer.whereis(via_tuple("bar4"))
     ref = Process.monitor(pid)
     Cachets.destroy_cache("bar4")
-    assert_receive {:DOWN, ^ref, :process, ^pid, :normal}, 5_000
-    assert :undefined = :ets.info(name_for_table("bar4"))
+    assert_receive {:DOWN, ^ref, _, _, _}, 5_000
   end
 
   @tag num: 8
@@ -92,8 +88,7 @@ defmodule CachetsTest do
     pid = GenServer.whereis(via_tuple("bar5"))
     ref = Process.monitor(pid)
     Cachets.Worker.Supervisor.destroy_cache("bar5")
-    assert_receive {:DOWN, ^ref, :process, ^pid, :normal}, 5_000
-    assert :undefined = :ets.info(name_for_table("bar5"))
+    assert_receive {:DOWN, ^ref, _, _, _}, 5_000
   end
 
   @tag num: 9
@@ -103,16 +98,16 @@ defmodule CachetsTest do
     pid = GenServer.whereis(via_tuple("bar6"))
     ref = Process.monitor(pid)
     Cachets.destroy_cache("bar6", with_ets: false)
-    assert_receive {:DOWN, ^ref, :process, ^pid, :normal}, 5_000
+    assert_receive {:DOWN, ^ref, _, _, _}, 5_000
     assert [_|_] = :ets.info(name_for_table("bar6"))
   end
 
   @tag num: 10
   test "ETS-cache don't crash after receiving unpredicted message" do
-    pid = GenServer.whereis(via_tuple("foo"))
+    pid = GenServer.whereis(via_tuple("foo2"))
     ref = Process.monitor(pid)
     send(pid, :unpredicted_message)
-    refute_receive {:DOWN, ^ref, _, ^pid, _}, 50
+    refute_receive {:DOWN, ^ref, _, _, _}, 50
   end
 
   @tag num: 11
@@ -120,7 +115,7 @@ defmodule CachetsTest do
     pid = GenServer.whereis(:'Elixir.Cachets.Common')
     ref = Process.monitor(pid)
     send(pid, :unpredicted_message)
-    refute_receive {:DOWN, ^ref, _, ^pid, _}, 50
+    refute_receive {:DOWN, ^ref, _, _, _}, 50
   end
 
   @tag num: 12
@@ -132,9 +127,9 @@ defmodule CachetsTest do
 
   @tag num: 13
   test "Add_new to worker" do
-    assert :ok = Cachets.add_new("foo", :uniqal, 123)
-    assert [_|_] = Cachets.get("foo", :uniqal)
-    assert {:error, "this key already exist"} = Cachets.add_new("foo", :uniqal, 123)
+    assert :ok = Cachets.add_new("foo2", :uniqal, 123)
+    assert [_|_] = Cachets.get("foo2", :uniqal)
+    assert {:error, "this key already exist"} = Cachets.add_new("foo2", :uniqal, 123)
   end
 
   @tag num: 14
@@ -147,10 +142,10 @@ defmodule CachetsTest do
 
   @tag num: 15
   test "Add_new to worker with self-delete option" do
-    assert :ok = Cachets.add_new("foo", :super_uniqal, 123, ttl: 20)
-    assert [super_uniqal: 123] == Cachets.get("foo", :super_uniqal)
+    assert :ok = Cachets.add_new("foo2", :super_uniqal, 123, ttl: 20)
+    assert [super_uniqal: 123] == Cachets.get("foo2", :super_uniqal)
     :timer.sleep(40)
-    assert [] = Cachets.gets("foo", :super_uniqal)
+    assert [] = Cachets.gets("foo2", :super_uniqal)
   end
 
   @tag num: 16
@@ -188,7 +183,7 @@ defmodule CachetsTest do
     pid = GenServer.whereis(:'Elixir.Cachets.Saver')
     ref = Process.monitor(pid)
     send(pid, :unpredicted_message)
-    refute_receive {:DOWN, ^ref, _, ^pid, _}, 20
+    refute_receive {:DOWN, ^ref, _, _, _}, 20
   end
 
   @tag num: 21
