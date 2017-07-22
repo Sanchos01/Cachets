@@ -16,7 +16,6 @@ defmodule Cachets.Supervisor do
     ]
 
     opts = [strategy: :one_for_one, name: __MODULE__]
-    Logger.info("start supervisor - #{inspect self()}")
     supervise(children, opts)
   end
 end

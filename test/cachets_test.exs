@@ -35,15 +35,13 @@ defmodule CachetsTest do
     assert GenServer.whereis(via_tuple("qwerty"))
   end
 
-  @tag num: 2
-  @tag tab: "bar"
+  @tag num: 2, tab: "bar"
   test "Creating new ETS-cache" do
     refute GenServer.whereis(via_tuple("bar"))
     assert :ok = Cachets.new_cache("bar")
   end
 
-  @tag num: 3
-  @tag tab: "bar2"
+  @tag num: 3, tab: "bar2"
   test "Creating new ETS-cache with timeout" do
     assert :ok = Cachets.new_cache("bar2", timeout: 1000)
   end
@@ -89,22 +87,19 @@ defmodule CachetsTest do
     assert {:error, _} = Cachets.Worker.Registry.start_link()
   end
 
-  @tag num: 8
-  @tag tab: "true"
+  @tag num: 8, tab: "true"
   test "Creating ETS-cache with normal options" do
     assert :ok = Cachets.new_cache("true", [protection: :public])
     assert :public = :ets.info(name_for_table("true"))[:protection]
   end
 
-  @tag num: 9
-  @tag tab: "wrong"
+  @tag num: 9, tab: "wrong"
   test "Creating ETS-cache with wrong options" do
     assert :ok = Cachets.new_cache("wrong", [protection: 123])
     assert @worker_table_protection = :ets.info(name_for_table("wrong"))[:protection]
   end
 
   @tag num: 10
-  @tag tab: "123"
   test "Killing caches don't destroy ETS-tab" do
     assert :ok = Cachets.new_cache("123")
     pid = GenServer.whereis(via_tuple("123"))
@@ -113,8 +108,7 @@ defmodule CachetsTest do
     assert [_|_] = :ets.info(name_for_table("123"))
   end
 
-  @tag num: 11
-  @tag tab: "baz1"
+  @tag num: 11, tab: "baz1"
   test "Create ETS-cache, while table with such name already exists" do
     saver_pid = GenServer.whereis(:'Elixir.Cachets.Saver')
     :ets.new(name_for_table("baz1"), [:set, :public, :named_table, {:heir, saver_pid, "hi"}])
@@ -125,8 +119,7 @@ defmodule CachetsTest do
     end
   end
 
-  @tag num: 12
-  @tag tab: "baz2"
+  @tag num: 12, tab: "baz2"
   test "Create ETS-cache, while table with such name already exists and owner of table - Saver" do
     saver_pid = GenServer.whereis(:'Elixir.Cachets.Saver')
     :ets.new(name_for_table("baz2"), [:set, :public, :named_table, {:heir, saver_pid, "hi"}])
