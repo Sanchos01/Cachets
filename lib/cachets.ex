@@ -25,42 +25,58 @@ defmodule Cachets do
   end
   @doc """
   Add the key and value to default storage
+  Options: [ttl: num], ttl mean lifetime
 
   ## Examples
 
       iex> Cachets.adds(:foo1, "bar")
       :ok
+      iex> Cachets.adds(:foo1, "bar", ttl: 20)
+      :ok
   """
   def adds(key, value, opts \\ []), do: Cachets.Common.add(@common_genserver, key, value, opts)
   @doc """
   Add the key and value to created before storage (in test pre-created "foo")
+  Options: [ttl: num], ttl mean lifetime
 
   ## Examples
 
       iex> Cachets.add("foo", :bar1, "baz")
       :ok
+      iex> Cachets.add("foo", :bar1, "baz", ttl: 20)
+      :ok
   """
   def add(name, key, value, opts \\ []), do: Cachets.Worker.add(via_tuple(name), key, value, opts)
   @doc """
   Add the key and value to default storage, but don't rewrite if such key already exists
+  Options: [ttl: num], ttl mean lifetime
 
   ## Examples
 
-      iex> Cachets.adds(:foo2, "bar")
+      iex> Cachets.adds_new(:foo2, "bar", ttl: 20)
       :ok
       iex> Cachets.adds_new(:foo2, "bar")
       {:error, "this key already exist"}
+      iex> :timer.sleep(50)
+      :ok
+      iex> Cachets.adds_new(:foo2, "bar")
+      :ok
   """
   def adds_new(key, value, opts \\ []), do: Cachets.Common.add_new(@common_genserver, key, value, opts)
   @doc """
   Add the key and value to created before storage, but don't rewrite if such key already exists (in test pre-created "foo")
+  Options: [ttl: num], ttl mean lifetime
 
   ## Examples
 
-      iex> Cachets.add("foo", :bar2, "baz")
+      iex> Cachets.add_new("foo", :bar2, "baz", ttl: 20)
       :ok
       iex> Cachets.add_new("foo", :bar2, "baz")
       {:error, "this key already exist"}
+      iex> :timer.sleep(50)
+      :ok
+      iex> Cachets.add_new("foo", :bar2, "baz")
+      :ok
   """
   def add_new(name, key, value, opts \\ []), do: Cachets.Worker.add_new(via_tuple(name), key, value, opts)
   @doc """

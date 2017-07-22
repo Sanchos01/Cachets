@@ -14,8 +14,7 @@ defmodule Cachets.Worker.Supervisor do
     ]
     supervise(children, strategy: :simple_one_for_one)
   end
-  
-  def new_cache(name, opts \\ [])
+
   def new_cache(name, opts) when is_bitstring(name) do
     table_name = name_for_table(name)
     via_name = {:via, Registry, {Cachets.Worker.Registry, name}}
@@ -33,7 +32,6 @@ defmodule Cachets.Worker.Supervisor do
   end
   def new_cache(_, _), do: {:error, "name must be string"}
 
-  def destroy_cache(name, opts \\ [])
   def destroy_cache(name, opts) when is_bitstring(name) do
     via_name = {:via, Registry, {Cachets.Worker.Registry, name}}
     with_ets = if opts[:with_ets] == false, do: false, else: true
