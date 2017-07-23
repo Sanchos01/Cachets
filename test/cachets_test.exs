@@ -48,21 +48,21 @@ defmodule CachetsTest do
 
   @tag num: 4
   test "Destroing ETS-cache" do
-    Cachets.new_cache("bar4")
-    pid = GenServer.whereis(via_tuple("bar4"))
+    Cachets.new_cache("bar3")
+    pid = GenServer.whereis(via_tuple("bar3"))
     ref = Process.monitor(pid)
-    Cachets.destroy_cache("bar4")
+    Cachets.destroy_cache("bar3")
     assert_receive {:DOWN, ^ref, _, _, _}, 5_000
   end
 
   @tag num: 5
   test "Destroing ETS-cache with saving table" do
-    Cachets.new_cache("bar6")
-    pid = GenServer.whereis(via_tuple("bar6"))
+    Cachets.new_cache("bar4")
+    pid = GenServer.whereis(via_tuple("bar4"))
     ref = Process.monitor(pid)
-    Cachets.destroy_cache("bar6", with_ets: false)
+    Cachets.destroy_cache("bar4", with_ets: false)
     assert_receive {:DOWN, ^ref, _, _, _}, 5_000
-    assert [_|_] = :ets.info(name_for_table("bar6"))
+    assert [_|_] = :ets.info(name_for_table("bar4"))
   end
 
   @tag num: 6
@@ -87,19 +87,13 @@ defmodule CachetsTest do
     assert {:error, _} = Cachets.Worker.Registry.start_link()
   end
 
-  @tag num: 8, tab: "true"
-  test "Creating ETS-cache with normal options" do
-    assert :ok = Cachets.new_cache("true", [protection: :public])
-    assert :public = :ets.info(name_for_table("true"))[:protection]
-  end
-
-  @tag num: 9, tab: "wrong"
+  @tag num: 8, tab: "wrong"
   test "Creating ETS-cache with wrong options" do
     assert :ok = Cachets.new_cache("wrong", [protection: 123])
     assert @worker_table_protection = :ets.info(name_for_table("wrong"))[:protection]
   end
 
-  @tag num: 10
+  @tag num: 9
   test "Killing caches don't destroy ETS-tab" do
     assert :ok = Cachets.new_cache("123")
     pid = GenServer.whereis(via_tuple("123"))
@@ -108,7 +102,7 @@ defmodule CachetsTest do
     assert [_|_] = :ets.info(name_for_table("123"))
   end
 
-  @tag num: 11, tab: "baz1"
+  @tag num: 10, tab: "baz1"
   test "Create ETS-cache, while table with such name already exists" do
     saver_pid = GenServer.whereis(:'Elixir.Cachets.Saver')
     :ets.new(name_for_table("baz1"), [:set, :public, :named_table, {:heir, saver_pid, "hi"}])
@@ -119,7 +113,7 @@ defmodule CachetsTest do
     end
   end
 
-  @tag num: 12, tab: "baz2"
+  @tag num: 11, tab: "baz2"
   test "Create ETS-cache, while table with such name already exists and owner of table - Saver" do
     saver_pid = GenServer.whereis(:'Elixir.Cachets.Saver')
     :ets.new(name_for_table("baz2"), [:set, :public, :named_table, {:heir, saver_pid, "hi"}])

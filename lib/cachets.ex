@@ -18,8 +18,12 @@ defmodule Cachets do
   def start(_type, _args) do
     {:ok, pid} = Cachets.Supervisor.start_link()
     case Application.get_env(:cachets, :add_caches) do
-        lst = [_|_] -> Enum.map(lst, &(new_cache(&1)))
-        _ -> :ok
+      lst = [_|_] -> Enum.map(lst, fn x -> case x do
+            [name, opts] -> Cachets.new_cache(name, opts)
+            name -> Cachets.new_cache(name)
+          end
+        end)
+      _ -> :ok
     end
     {:ok, pid}
   end

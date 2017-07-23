@@ -5,4 +5,7 @@ config :logger,
 
 config :cachets,
   timeout: 10,
-  add_caches: ["qwerty"]
+  add_caches: [
+    "qwerty",
+    ["qwe", [timeout: 10000, protection: :public]]
+  ]
