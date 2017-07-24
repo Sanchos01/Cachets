@@ -9,16 +9,7 @@ defmodule Cachets.Common do
 
   def start_link(name, opts \\ [])
   defstart start_link(name, opts), links: true, gen_server_opts: [name: name] do
-    saver_pid = GenServer.whereis(:'Elixir.Cachets.Saver')
-    try do
-      :ets.new(@common_table, [@common_table_protection|[{:heir, saver_pid, "transfered from common"}|@ets_preset]])
-    rescue
-      ArgumentError ->
-        send saver_pid, {:return_table_for_common, self()}
-          receive do
-            {:"ETS-TRANSFER", @common_table, ^saver_pid, "return back common_table"} -> :ok
-          end
-    end
+    :ets.new(@common_table, [@common_table_protection|@ets_preset])
     timeout_after(Application.get_env(:cachets, :timeout))
     initial_state([])
   end
