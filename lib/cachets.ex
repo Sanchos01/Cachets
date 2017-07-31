@@ -27,7 +27,7 @@ defmodule Cachets do
     end
     {:ok, pid}
   end
-  @doc """
+  @doc ~S"""
   Add the key and value to default storage
   Options: [ttl: num], ttl mean lifetime
 
@@ -39,7 +39,7 @@ defmodule Cachets do
       :ok
   """
   def adds(key, value, opts \\ []), do: Cachets.Common.add(@common_genserver, key, value, opts)
-  @doc """
+  @doc ~S"""
   Add the key and value to created before storage (in test pre-created "foo")
   Options: [ttl: num], ttl mean lifetime
 
@@ -51,7 +51,7 @@ defmodule Cachets do
       :ok
   """
   def add(name, key, value, opts \\ []), do: Cachets.Worker.add(via_tuple(name), key, value, opts)
-  @doc """
+  @doc ~S"""
   Add the key and value to default storage, but don't rewrite if such key already exists
   Options: [ttl: num], ttl mean lifetime
 
@@ -67,7 +67,7 @@ defmodule Cachets do
       :ok
   """
   def adds_new(key, value, opts \\ []), do: Cachets.Common.add_new(@common_genserver, key, value, opts)
-  @doc """
+  @doc ~S"""
   Add the key and value to created before storage, but don't rewrite if such key already exists (in test pre-created "foo")
   Options: [ttl: num], ttl mean lifetime
 
@@ -83,7 +83,7 @@ defmodule Cachets do
       :ok
   """
   def add_new(name, key, value, opts \\ []), do: Cachets.Worker.add_new(via_tuple(name), key, value, opts)
-  @doc """
+  @doc ~S"""
   Get the key and value from default storage
 
   ## Examples
@@ -94,7 +94,7 @@ defmodule Cachets do
       [foo3: "bar"]
   """
   def gets(key, opts \\ []), do: Cachets.Common.get(@common_genserver, key, opts)
-  @doc """
+  @doc ~S"""
   Get the key and value from created before storage (in test pre-created "foo")
 
   ## Examples
@@ -105,7 +105,7 @@ defmodule Cachets do
       [bar3: "baz"]
   """
   def get(name, key, opts \\ []), do: Cachets.Worker.get(via_tuple(name), key, opts)
-  @doc """
+  @doc ~S"""
   Delete the key and value from default storage
 
   ## Examples
@@ -118,7 +118,7 @@ defmodule Cachets do
       []
   """
   def deletes(key, opts \\ []), do: Cachets.Common.delete(@common_genserver, key, opts)
-  @doc """
+  @doc ~S"""
   Delete the key and value from created before storage (in test pre-created "foo")
 
   ## Examples

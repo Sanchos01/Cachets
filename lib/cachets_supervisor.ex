@@ -11,7 +11,7 @@ defmodule Cachets.Supervisor do
     children = [
       supervisor(Cachets.Worker.Supervisor, []),
       supervisor(Registry, [:unique, Cachets.Worker.Registry]),
-      worker(Cachets.Saver, [Cachets.Saver]),
+      worker(Cachets.Saver, []),
       worker(Cachets.Common, [@common_genserver])
     ]
 

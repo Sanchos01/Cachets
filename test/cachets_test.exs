@@ -52,7 +52,7 @@ defmodule CachetsTest do
     pid = GenServer.whereis(via_tuple("bar3"))
     ref = Process.monitor(pid)
     Cachets.destroy_cache("bar3")
-    assert_receive {:DOWN, ^ref, _, _, _}, 5_000
+    assert_receive {:DOWN, ^ref, _, _, _}
   end
 
   @tag num: 5
@@ -61,7 +61,7 @@ defmodule CachetsTest do
     pid = GenServer.whereis(via_tuple("bar4"))
     ref = Process.monitor(pid)
     Cachets.destroy_cache("bar4", with_ets: false)
-    assert_receive {:DOWN, ^ref, _, _, _}, 5_000
+    assert_receive {:DOWN, ^ref, _, _, _}
     assert [_|_] = :ets.info(name_for_table("bar4"))
   end
 
@@ -76,9 +76,9 @@ defmodule CachetsTest do
     send(pid1, :unpredicted_message)
     send(pid2, :unpredicted_message)
     send(pid3, :unpredicted_message)
-    refute_receive {:DOWN, ^ref1, _, _, _}, 20
-    refute_receive {:DOWN, ^ref2, _, _, _}, 20
-    refute_receive {:DOWN, ^ref3, _, _, _}, 20
+    refute_receive {:DOWN, ^ref1, _, _, _}
+    refute_receive {:DOWN, ^ref2, _, _, _}
+    refute_receive {:DOWN, ^ref3, _, _, _}
   end
 
   @tag num: 7
@@ -106,11 +106,7 @@ defmodule CachetsTest do
   test "Create ETS-cache, while table with such name already exists" do
     saver_pid = GenServer.whereis(:'Elixir.Cachets.Saver')
     :ets.new(name_for_table("baz1"), [:set, :public, :named_table, {:heir, saver_pid, "hi"}])
-    try do
-      Cachets.new_cache("baz1")
-    rescue
-      MatchError -> :ok
-    end
+    assert_raise(MatchError, fn -> Cachets.new_cache("baz1") end)
   end
 
   @tag num: 11, tab: "baz2"
@@ -118,10 +114,6 @@ defmodule CachetsTest do
     saver_pid = GenServer.whereis(:'Elixir.Cachets.Saver')
     :ets.new(name_for_table("baz2"), [:set, :public, :named_table, {:heir, saver_pid, "hi"}])
     :ets.give_away(name_for_table("baz2"), saver_pid, "hi")
-    try do
-      Cachets.new_cache("baz2")
-    rescue
-      MatchError -> :ok
-    end
+    assert_raise(MatchError, fn -> Cachets.new_cache("baz2") end)
   end
 end

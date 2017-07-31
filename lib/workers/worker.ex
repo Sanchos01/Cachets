@@ -19,7 +19,7 @@ defmodule Cachets.Worker do
             after
               300 -> raise "Table with such name already exists"
             end
-          _another_pid -> raise "Table with such name already exists"
+          _another_pid -> raise(ArgumentError, message: "Table with such name already exists")
         end
     end
     timeout_after(opts[:timeout])
