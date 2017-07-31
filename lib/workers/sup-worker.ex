@@ -34,7 +34,10 @@ defmodule Cachets.Worker.Supervisor do
 
   def destroy_cache(name, opts) when is_bitstring(name) do
     via_name = {:via, Registry, {Cachets.Worker.Registry, name}}
-    with_ets = if opts[:with_ets] == false, do: false, else: true
+    with_ets = case opts[:with_ets] do
+      false -> false
+      _ -> true
+    end
     case GenServer.whereis(via_name) do
       nil -> {:error, "This cache is not exists"}
       pid -> ref = Process.monitor(pid)
@@ -42,7 +45,7 @@ defmodule Cachets.Worker.Supervisor do
              receive do
                {:DOWN, ^ref, :process, ^pid, :normal} -> :ok
              after
-               20_000 -> {:error, "Can't stop cache #{inspect via_name}"}
+               5_000 -> {:error, "Can't stop cache #{inspect via_name}"}
              end
     end
   end

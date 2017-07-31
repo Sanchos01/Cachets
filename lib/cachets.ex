@@ -18,11 +18,12 @@ defmodule Cachets do
   def start(_type, _args) do
     {:ok, pid} = Cachets.Supervisor.start_link()
     case Application.get_env(:cachets, :add_caches) do
-      lst = [_|_] -> Enum.map(lst, fn x -> case x do
-            [name, opts] -> Cachets.new_cache(name, opts)
-            name -> Cachets.new_cache(name)
-          end
-        end)
+      lst = [_|_] -> Enum.map(lst, fn x ->
+              case x do
+                [name, opts] -> Cachets.new_cache(name, opts)
+                name -> Cachets.new_cache(name)
+              end
+            end)
       _ -> :ok
     end
     {:ok, pid}
@@ -93,7 +94,7 @@ defmodule Cachets do
       iex> Cachets.gets(:foo3)
       [foo3: "bar"]
   """
-  def gets(key, opts \\ []), do: Cachets.Common.get(@common_genserver, key, opts)
+  def gets(key), do: Cachets.Common.get(@common_genserver, key)
   @doc ~S"""
   Get the key and value from created before storage (in test pre-created "foo")
 
@@ -104,7 +105,7 @@ defmodule Cachets do
       iex> Cachets.get("foo", :bar3)
       [bar3: "baz"]
   """
-  def get(name, key, opts \\ []), do: Cachets.Worker.get(via_tuple(name), key, opts)
+  def get(name, key), do: Cachets.Worker.get(via_tuple(name), key)
   @doc ~S"""
   Delete the key and value from default storage
 
@@ -117,7 +118,7 @@ defmodule Cachets do
       iex> Cachets.gets(:foo4)
       []
   """
-  def deletes(key, opts \\ []), do: Cachets.Common.delete(@common_genserver, key, opts)
+  def deletes(key), do: Cachets.Common.delete(@common_genserver, key)
   @doc ~S"""
   Delete the key and value from created before storage (in test pre-created "foo")
 
@@ -130,5 +131,5 @@ defmodule Cachets do
       iex> Cachets.get("foo", :bar4)
       []
   """
-  def delete(name, key, opts \\ []), do: Cachets.Worker.delete(via_tuple(name), key, opts)
+  def delete(name, key), do: Cachets.Worker.delete(via_tuple(name), key)
 end

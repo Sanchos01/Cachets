@@ -7,8 +7,7 @@ defmodule Cachets.Common do
   @ets_preset [:set, :named_table]
   import Cachets.Utils, only: [nowstamp: 0]
 
-  def start_link(name, opts \\ [])
-  defstart start_link(name, opts), links: true, gen_server_opts: [name: name] do
+  defstart start_link(name), links: true, gen_server_opts: [name: name] do
     saver_pid = GenServer.whereis(:'Elixir.Cachets.Saver')
     try do
       :ets.new(@common_table, [@common_table_protection|[{:heir, saver_pid, "transfered from common"}|@ets_preset]])
@@ -41,9 +40,9 @@ defmodule Cachets.Common do
     :ets.insert(@table, {key, value})
     Logger.debug("add value: #{inspect {key, value, opts}} to default storage")
     if (ttl = opts[:ttl]) |> is_integer do
-      new_state([{key, nowstamp() + ttl}|Enum.reject(state, fn {el, _ttl} -> el == key end)])
+      new_state(Keyword.put(state, key, nowstamp() + ttl))
     else
-      new_state([{key, :inf}|Enum.reject(state, fn {el, _ttl} -> el == key end)])
+      new_state(Keyword.put(state, key, :inf))
     end
   end
 
@@ -51,21 +50,21 @@ defmodule Cachets.Common do
     case :ets.insert_new(@table, {key, value}) do
       true -> Logger.debug("add new value: #{inspect {key, value, opts}} to default storage")
               if (ttl = opts[:ttl]) |> is_integer do
-                set_and_reply([{key, nowstamp() + ttl}|Enum.reject(state, fn {el, _ttl} -> el == key end)], :ok)
+                set_and_reply(Keyword.put(state, key, nowstamp() + ttl), :ok)
               else
-                set_and_reply([{key, :inf}|Enum.reject(state, fn {el, _ttl} -> el == key end)], :ok)
+                set_and_reply(Keyword.put(state, key, :inf), :ok)
               end
       _ -> reply({:error, "this key already exist"})
     end
   end
 
-  defcall get(key, _opts) do
+  defcall get(key) do
     reply(:ets.lookup(@table, key))
   end
 
-  defcast delete(key, _opts), state: state do
+  defcast delete(key), state: state do
     :ets.delete(@table, key)
-    new_state(Enum.reject(state, fn {el, _ttl} -> el == key end))
+    new_state(Keyword.delete(state, key))
   end
 
   def handle_info(msg, state), do: (Logger.debug("Unpredicted msg: #{inspect msg}, for: #{inspect self()}"); {:noreply, state})
