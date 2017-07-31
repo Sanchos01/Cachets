@@ -12,22 +12,23 @@ defmodule Cachets do
   """
   @common_genserver Application.get_env(:cachets, :common_genserver)
   defdelegate new_cache(name, opts \\ []), to: Cachets.Worker.Supervisor
-  defdelegate destroy_cache(name), to: Cachets.Worker.Supervisor
+  defdelegate destroy_cache(name, opts \\ []), to: Cachets.Worker.Supervisor
   import Cachets.Utils, only: [via_tuple: 1]
 
   def start(_type, _args) do
     {:ok, pid} = Cachets.Supervisor.start_link()
     case Application.get_env(:cachets, :add_caches) do
-      lst = [_|_] -> Enum.map(lst, fn x -> case x do
-            [name, opts] -> Cachets.new_cache(name, opts)
-            name -> Cachets.new_cache(name)
-          end
-        end)
+      lst = [_|_] -> Enum.map(lst, fn x ->
+              case x do
+                [name, opts] -> Cachets.new_cache(name, opts)
+                name -> Cachets.new_cache(name)
+              end
+            end)
       _ -> :ok
     end
     {:ok, pid}
   end
-  @doc """
+  @doc ~S"""
   Add the key and value to default storage
   Options: [ttl: num], ttl mean lifetime
 
@@ -39,7 +40,7 @@ defmodule Cachets do
       :ok
   """
   def adds(key, value, opts \\ []), do: Cachets.Common.add(@common_genserver, key, value, opts)
-  @doc """
+  @doc ~S"""
   Add the key and value to created before storage (in test pre-created "foo")
   Options: [ttl: num], ttl mean lifetime
 
@@ -51,7 +52,7 @@ defmodule Cachets do
       :ok
   """
   def add(name, key, value, opts \\ []), do: Cachets.Worker.add(via_tuple(name), key, value, opts)
-  @doc """
+  @doc ~S"""
   Add the key and value to default storage, but don't rewrite if such key already exists
   Options: [ttl: num], ttl mean lifetime
 
@@ -67,7 +68,7 @@ defmodule Cachets do
       :ok
   """
   def adds_new(key, value, opts \\ []), do: Cachets.Common.add_new(@common_genserver, key, value, opts)
-  @doc """
+  @doc ~S"""
   Add the key and value to created before storage, but don't rewrite if such key already exists (in test pre-created "foo")
   Options: [ttl: num], ttl mean lifetime
 
@@ -83,7 +84,7 @@ defmodule Cachets do
       :ok
   """
   def add_new(name, key, value, opts \\ []), do: Cachets.Worker.add_new(via_tuple(name), key, value, opts)
-  @doc """
+  @doc ~S"""
   Get the key and value from default storage
 
   ## Examples
@@ -93,8 +94,8 @@ defmodule Cachets do
       iex> Cachets.gets(:foo3)
       [foo3: "bar"]
   """
-  def gets(key, opts \\ []), do: Cachets.Common.get(@common_genserver, key, opts)
-  @doc """
+  def gets(key), do: Cachets.Common.get(@common_genserver, key)
+  @doc ~S"""
   Get the key and value from created before storage (in test pre-created "foo")
 
   ## Examples
@@ -104,8 +105,8 @@ defmodule Cachets do
       iex> Cachets.get("foo", :bar3)
       [bar3: "baz"]
   """
-  def get(name, key, opts \\ []), do: Cachets.Worker.get(via_tuple(name), key, opts)
-  @doc """
+  def get(name, key), do: Cachets.Worker.get(via_tuple(name), key)
+  @doc ~S"""
   Delete the key and value from default storage
 
   ## Examples
@@ -117,8 +118,8 @@ defmodule Cachets do
       iex> Cachets.gets(:foo4)
       []
   """
-  def deletes(key, opts \\ []), do: Cachets.Common.delete(@common_genserver, key, opts)
-  @doc """
+  def deletes(key), do: Cachets.Common.delete(@common_genserver, key)
+  @doc ~S"""
   Delete the key and value from created before storage (in test pre-created "foo")
 
   ## Examples
@@ -130,5 +131,5 @@ defmodule Cachets do
       iex> Cachets.get("foo", :bar4)
       []
   """
-  def delete(name, key, opts \\ []), do: Cachets.Worker.delete(via_tuple(name), key, opts)
+  def delete(name, key), do: Cachets.Worker.delete(via_tuple(name), key)
 end

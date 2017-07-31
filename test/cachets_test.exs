@@ -52,30 +52,69 @@ defmodule CachetsTest do
     pid = GenServer.whereis(via_tuple("bar3"))
     ref = Process.monitor(pid)
     Cachets.destroy_cache("bar3")
-    assert_receive {:DOWN, ^ref, _, _, _}, 5_000
+    assert_receive {:DOWN, ^ref, _, _, _}
   end
 
   @tag num: 5
-  test "Worker and Common don't crash after receiving unpredicted messages" do
-    pid1 = GenServer.whereis(via_tuple("foo2"))
-    pid2 = GenServer.whereis(:'Elixir.Cachets.Common')
-    ref1 = Process.monitor(pid1)
-    ref2 = Process.monitor(pid2)
-    send(pid1, :unpredicted_message)
-    send(pid2, :unpredicted_message)
-    refute_receive {:DOWN, ^ref1, _, _, _}, 20
-    refute_receive {:DOWN, ^ref2, _, _, _}, 20
+  test "Destroing ETS-cache with saving table" do
+    Cachets.new_cache("bar4")
+    pid = GenServer.whereis(via_tuple("bar4"))
+    ref = Process.monitor(pid)
+    Cachets.destroy_cache("bar4", with_ets: false)
+    assert_receive {:DOWN, ^ref, _, _, _}
+    :timer.sleep(110)
+    assert [_|_] = :ets.info(name_for_table("bar4"))
   end
 
   @tag num: 6
+  test "Worker, Common and Saver don't crash after receiving unpredicted messages" do
+    pid1 = GenServer.whereis(via_tuple("foo2"))
+    pid2 = GenServer.whereis(:'Elixir.Cachets.Common')
+    pid3 = GenServer.whereis(:'Elixir.Cachets.Saver')
+    ref1 = Process.monitor(pid1)
+    ref2 = Process.monitor(pid2)
+    ref3 = Process.monitor(pid3)
+    send(pid1, :unpredicted_message)
+    send(pid2, :unpredicted_message)
+    send(pid3, :unpredicted_message)
+    refute_receive {:DOWN, ^ref1, _, _, _}
+    refute_receive {:DOWN, ^ref2, _, _, _}
+    refute_receive {:DOWN, ^ref3, _, _, _}
+  end
+
+  @tag num: 7
   test "Registry module" do
     assert GenServer.whereis(:'Elixir.Cachets.Worker.Registry')
     assert {:error, _} = Cachets.Worker.Registry.start_link()
   end
 
-  @tag num: 7, tab: "wrong"
+  @tag num: 8, tab: "wrong"
   test "Creating ETS-cache with wrong options" do
     assert :ok = Cachets.new_cache("wrong", [protection: 123])
     assert @worker_table_protection = :ets.info(name_for_table("wrong"))[:protection]
+  end
+
+  @tag num: 9
+  test "Killing caches don't destroy ETS-tab" do
+    assert :ok = Cachets.new_cache("123")
+    pid = GenServer.whereis(via_tuple("123"))
+    Process.exit(pid, :kill)
+    :timer.sleep(20)
+    assert [_|_] = :ets.info(name_for_table("123"))
+  end
+
+  @tag num: 10
+  test "Create ETS-cache, while table with such name already exists" do
+    saver_pid = GenServer.whereis(:'Elixir.Cachets.Saver')
+    :ets.new(name_for_table("baz1"), [:set, :public, :named_table, {:heir, saver_pid, "hi"}])
+    assert_raise(MatchError, fn -> Cachets.new_cache("baz1") end)
+  end
+
+  @tag num: 11
+  test "Create ETS-cache, while table with such name already exists and owner of table - Saver" do
+    saver_pid = GenServer.whereis(:'Elixir.Cachets.Saver')
+    :ets.new(name_for_table("baz2"), [:set, :public, :named_table, {:heir, saver_pid, "hi"}])
+    :ets.give_away(name_for_table("baz2"), saver_pid, "hi")
+    assert_raise(MatchError, fn -> Cachets.new_cache("baz2") end)
   end
 end
