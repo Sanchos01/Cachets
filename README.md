@@ -1,5 +1,5 @@
 # Cachets
-[![Build Status](https://travis-ci.org/Sanchos01/Cachets.svg?branch=master)](https://travis-ci.org/Sanchos01/Cachets) [![Deps Status](https://beta.hexfaktor.org/badge/all/github/Sanchos01/Cachets.svg)](https://beta.hexfaktor.org/github/Sanchos01/Cachets) [![Coverage Status](https://coveralls.io/repos/github/Sanchos01/Cachets/badge.svg?branch=master)](https://coveralls.io/github/Sanchos01/Cachets?branch=master)
+[![Build Status](https://travis-ci.org/Sanchos01/Cachets.svg?branch=master)](https://travis-ci.org/Sanchos01/Cachets) [![Coverage Status](https://coveralls.io/repos/github/Sanchos01/Cachets/badge.svg?branch=master)](https://coveralls.io/github/Sanchos01/Cachets?branch=master)
 
 **TODO: Add description**
 

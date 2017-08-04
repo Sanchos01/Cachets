@@ -15,6 +15,20 @@ defmodule Cachets.Worker.Supervisor do
     supervise(children, strategy: :simple_one_for_one)
   end
 
+  @doc ~S"""
+  Create new ETS-cache.
+
+  Options: [timeout: num], time between checks expirations of record's lifetime;
+
+  [protection: protection], ets-protection, possible options - :protected, :public, :private.
+
+  ## Examples
+
+      iex> Cachets.new_cache("bar")
+      :ok
+      iex> Cachets.new_cache("bar2", timeout: 1000)
+      :ok
+  """
   def new_cache(name, opts) when is_bitstring(name) do
     table_name = name_for_table(name)
     via_name = {:via, Registry, {Cachets.Worker.Registry, name}}
@@ -32,6 +46,20 @@ defmodule Cachets.Worker.Supervisor do
   end
   def new_cache(_, _), do: {:error, "name must be string"}
 
+  @doc ~S"""
+  Destroy existing ETS-cache.
+
+  Options: [with_ets: false], destroy with ets-table or not, options - true/false.
+
+  ## Examples
+
+      iex> Cachets.destroy_cache("bar3")
+      {:error, "This cache is not exists"}
+      iex> Cachets.new_cache("bar3")
+      :ok
+      iex> Cachets.destroy_cache("bar3")
+      :ok
+  """
   def destroy_cache(name, opts) when is_bitstring(name) do
     via_name = {:via, Registry, {Cachets.Worker.Registry, name}}
     with_ets = case opts[:with_ets] do

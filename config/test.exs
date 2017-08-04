@@ -1,7 +1,7 @@
 use Mix.Config
 
 config :logger,
-  level: :debug
+  level: :info
 
 config :cachets,
   timeout: 10,

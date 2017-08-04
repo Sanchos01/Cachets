@@ -1,14 +1,18 @@
 defmodule Cachets do
   require Logger
   use Application
+
   @moduledoc """
   Simple implemintation of ETS-storage with following features:
   - Entry with lifetime
   - Using default storage or creating your own ETS-table
 
-  Example:
-    Cachets.adds(:foo, "bar")
-    Cachets.gets(:foo) # "bar"
+  ## Examples
+
+      iex> Cachets.adds(:foo, "bar")
+      :ok
+      iex> Cachets.gets(:foo)
+      [foo: "bar"]
   """
   @common_genserver Application.get_env(:cachets, :common_genserver)
   defdelegate new_cache(name, opts \\ []), to: Cachets.Worker.Supervisor
@@ -28,9 +32,11 @@ defmodule Cachets do
     end
     {:ok, pid}
   end
+
   @doc ~S"""
-  Add the key and value to default storage
-  Options: [ttl: num], ttl mean lifetime
+  Add the key and value to default storage.
+
+  Options: [ttl: num], ttl mean lifetime.
 
   ## Examples
 
@@ -40,9 +46,11 @@ defmodule Cachets do
       :ok
   """
   def adds(key, value, opts \\ []), do: Cachets.Common.add(@common_genserver, key, value, opts)
+
   @doc ~S"""
-  Add the key and value to created before storage (in test pre-created "foo")
-  Options: [ttl: num], ttl mean lifetime
+  Add the key and value to created before storage (in test pre-created "foo").
+
+  Options: [ttl: num], ttl mean lifetime.
 
   ## Examples
 
@@ -52,9 +60,11 @@ defmodule Cachets do
       :ok
   """
   def add(name, key, value, opts \\ []), do: Cachets.Worker.add(via_tuple(name), key, value, opts)
+
   @doc ~S"""
-  Add the key and value to default storage, but don't rewrite if such key already exists
-  Options: [ttl: num], ttl mean lifetime
+  Add the key and value to default storage, but don't rewrite if such key already exists.
+
+  Options: [ttl: num], ttl mean lifetime.
 
   ## Examples
 
@@ -68,9 +78,11 @@ defmodule Cachets do
       :ok
   """
   def adds_new(key, value, opts \\ []), do: Cachets.Common.add_new(@common_genserver, key, value, opts)
+
   @doc ~S"""
-  Add the key and value to created before storage, but don't rewrite if such key already exists (in test pre-created "foo")
-  Options: [ttl: num], ttl mean lifetime
+  Add the key and value to created before storage, but don't rewrite if such key already exists (in test pre-created "foo").
+
+  Options: [ttl: num], ttl mean lifetime.
 
   ## Examples
 
@@ -84,6 +96,7 @@ defmodule Cachets do
       :ok
   """
   def add_new(name, key, value, opts \\ []), do: Cachets.Worker.add_new(via_tuple(name), key, value, opts)
+
   @doc ~S"""
   Get the key and value from default storage
 
@@ -95,8 +108,9 @@ defmodule Cachets do
       [foo3: "bar"]
   """
   def gets(key), do: Cachets.Common.get(@common_genserver, key)
+
   @doc ~S"""
-  Get the key and value from created before storage (in test pre-created "foo")
+  Get the key and value from created before storage (in test pre-created "foo").
 
   ## Examples
 
@@ -106,8 +120,9 @@ defmodule Cachets do
       [bar3: "baz"]
   """
   def get(name, key), do: Cachets.Worker.get(via_tuple(name), key)
+
   @doc ~S"""
-  Delete the key and value from default storage
+  Delete the key and value from default storage.
 
   ## Examples
 
@@ -119,8 +134,9 @@ defmodule Cachets do
       []
   """
   def deletes(key), do: Cachets.Common.delete(@common_genserver, key)
+
   @doc ~S"""
-  Delete the key and value from created before storage (in test pre-created "foo")
+  Delete the key and value from created before storage (in test pre-created "foo").
 
   ## Examples
 
