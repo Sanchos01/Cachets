@@ -51,6 +51,27 @@ defmodule Cachets.Worker do
     end
   end
 
+  defcall update(key, func, opts), state: state, when: is_function(func) do
+    new_value = func.((:ets.lookup(state[:name_of_attached_table], key)[key]) || 0)
+    :ets.insert(state[:name_of_attached_table], {key, new_value})
+    Logger.debug("update value: #{inspect {key, new_value, opts}} to default storage")
+    if (ttl = opts[:ttl]) |> is_integer do
+      set_and_reply(Keyword.put(state, key, Keyword.get(state, key, ttl)), :ok)
+    else
+      set_and_reply(Keyword.put(state, key, Keyword.get(state, key, :inf)), :ok)
+    end
+  end
+
+  defcall update(key, value, opts), state: state do
+    :ets.insert(state[:name_of_attached_table], {key, value})
+    Logger.debug("update value: #{inspect {key, value, opts}} to default storage")
+    if (ttl = opts[:ttl]) |> is_integer do
+      set_and_reply(Keyword.put(state, key, Keyword.get(state, key, ttl)), :ok)
+    else
+      set_and_reply(Keyword.put(state, key, Keyword.get(state, key, :inf)), :ok)
+    end
+  end
+
   defcall add_new(key, value, opts), state: state do
     case :ets.insert_new(state[:name_of_attached_table], {key, value}) do
       true -> Logger.debug("add new value: #{inspect {key, value, opts}} to #{inspect state[:name_of_attached_table]}")

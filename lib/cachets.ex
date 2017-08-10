@@ -148,4 +148,68 @@ defmodule Cachets do
       []
   """
   def delete(name, key), do: Cachets.Worker.delete(via_tuple(name), key)
+
+  @doc ~S"""
+  Update value from default storage without changing lifetime, can put new value or use function
+
+  Options: [ttl: num], ttl mean lifetime, used when such key not exists, default ttl = :inf
+
+  ## Examples
+
+      iex> Cachets.adds(:foo5, 3, ttl: 20)
+      :ok
+      iex> Cachets.updates(:foo5, 7)
+      :ok
+      iex> Cachets.updates(:foo5, 7, ttl: 100_000)
+      :ok
+      iex> Cachets.gets(:foo5)
+      [foo5: 7]
+      iex> :timer.sleep(30)
+      :ok
+      iex> Cachets.gets(:foo5)
+      []
+      iex> Cachets.updates(:foo5, &(&1 + 1), ttl: 20)
+      :ok
+      iex> Cachets.updates(:foo5, &(&1 / 2))
+      :ok
+      iex> Cachets.gets(:foo5)
+      [foo5: 0.5]
+      iex> :timer.sleep(30)
+      :ok
+      iex> Cachets.gets(:foo5)
+      []
+  """
+  def updates(key, term, opts \\ []), do: Cachets.Common.update(@common_genserver, key, term, opts)
+
+  @doc ~S"""
+  Update value from created before storage (in test pre-created "foo") without changing lifetime, can put new value or use function
+
+  Options: [ttl: num], ttl mean lifetime, used when such key not exists, default ttl = :inf
+
+  ## Examples
+
+      iex> Cachets.add("foo", :bar4, 3, ttl: 20)
+      :ok
+      iex> Cachets.update("foo", :bar4, 7)
+      :ok
+      iex> Cachets.update("foo", :bar4, 7, ttl: 100_000)
+      :ok
+      iex> Cachets.get("foo", :bar4)
+      [bar4: 7]
+      iex> :timer.sleep(30)
+      :ok
+      iex> Cachets.get("foo", :bar4)
+      []
+      iex> Cachets.update("foo", :bar4, &(&1 + 1), ttl: 20)
+      :ok
+      iex> Cachets.update("foo", :bar4, &(&1 / 2))
+      :ok
+      iex> Cachets.get("foo", :bar4)
+      [bar4: 0.5]
+      iex> :timer.sleep(30)
+      :ok
+      iex> Cachets.get("foo", :bar4)
+      []
+  """
+  def update(name, key, term, opts \\ []), do: Cachets.Worker.update(via_tuple(name), key, term, opts)
 end
