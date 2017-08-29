@@ -102,5 +102,5 @@ defmodule Cachets.Worker do
     stop_server(:normal)
   end
 
-  def handle_info(msg, state), do: (Logger.debug("Unpredicted msg: #{inspect msg}, for: #{inspect self()}"); {:noreply, state})
+  def handle_info(msg, state), do: (Logger.debug("Unpredicted msg: #{inspect msg}, for: #{__MODULE__}:#{inspect state[:name_of_attached_table]}"); {:noreply, state})
 end

@@ -88,5 +88,5 @@ defmodule Cachets.Common do
     new_state(Keyword.delete(state, key))
   end
 
-  def handle_info(msg, state), do: (Logger.debug("Unpredicted msg: #{inspect msg}, for: #{inspect self()}"); {:noreply, state})
+  def handle_info(msg, state), do: (Logger.debug("Unpredicted msg: #{inspect msg}, for Common"); {:noreply, state})
 end
